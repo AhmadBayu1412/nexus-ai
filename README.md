@@ -1,4 +1,4 @@
-# Nexus AI Chatbot
+# Nexus AI
 
 A production-grade, streaming AI chat interface built with Next.js 16, featuring real-time token streaming, chat history persistence, multi-provider AI support, and Firebase + NextAuth authentication.
 
@@ -16,18 +16,18 @@ A production-grade, streaming AI chat interface built with Next.js 16, featuring
 
 ## Tech Stack
 
-| Category | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript |
-| AI SDK | Vercel AI SDK (`ai` package) |
-| LLM Provider | OpenAI / Anthropic (configurable) |
-| Authentication | NextAuth v5 + Firebase Admin |
-| Database | Prisma ORM + PostgreSQL (Neon, free tier) |
-| Rate Limiting | Upstash Redis |
-| Styling | Tailwind CSS v4 |
-| UI Components | CVA, Lucide React, Framer Motion |
-| Deployment | Vercel |
+| Category       | Technology                                |
+| -------------- | ----------------------------------------- |
+| Framework      | Next.js 16 (App Router, Turbopack)        |
+| Language       | TypeScript                                |
+| AI SDK         | Vercel AI SDK (`ai` package)              |
+| LLM Provider   | OpenAI / Anthropic (configurable)         |
+| Authentication | NextAuth v5 + Firebase Admin              |
+| Database       | Prisma ORM + PostgreSQL (Neon, free tier) |
+| Rate Limiting  | Upstash Redis                             |
+| Styling        | Tailwind CSS v4                           |
+| UI Components  | CVA, Lucide React, Framer Motion          |
+| Deployment     | Vercel                                    |
 
 ## Getting Started
 
@@ -46,17 +46,17 @@ cp .env.example .env.local
 
 Fill in the required values:
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | Neon PostgreSQL connection string, e.g. `postgresql://user:pass@host/db?sslmode=require` |
-| `NEXTAUTH_URL` | Your app URL, e.g. `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | Generate with `openssl rand -base64 32` |
-| `OPENAI_API_KEY` | Your OpenAI API key |
-| `ANTHROPIC_API_KEY` | (Optional) Your Anthropic API key |
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
-| `UPSTASH_REIS_REST_TOKEN` | Upstash Redis REST Token |
-| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth App credentials |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google OAuth App credentials |
+| Variable                                | Description                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                          | Neon PostgreSQL connection string, e.g. `postgresql://user:pass@host/db?sslmode=require` |
+| `NEXTAUTH_URL`                          | Your app URL, e.g. `http://localhost:3000`                                               |
+| `NEXTAUTH_SECRET`                       | Generate with `openssl rand -base64 32`                                                  |
+| `OPENAI_API_KEY`                        | Your OpenAI API key                                                                      |
+| `ANTHROPIC_API_KEY`                     | (Optional) Your Anthropic API key                                                        |
+| `UPSTASH_REDIS_REST_URL`                | Upstash Redis REST URL                                                                   |
+| `UPSTASH_REIS_REST_TOKEN`               | Upstash Redis REST Token                                                                 |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth App credentials                                                             |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google OAuth App credentials                                                             |
 
 ### Installation
 
@@ -185,12 +185,12 @@ Detailed documentation is available in the `docs/` directory:
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `Enter` | Send message |
+| Shortcut        | Action               |
+| --------------- | -------------------- |
+| `Enter`         | Send message         |
 | `Shift + Enter` | New line in textarea |
-| `Escape` | Stop generation |
-| `Ctrl/Cmd + K` | Focus chat input |
+| `Escape`        | Stop generation      |
+| `Ctrl/Cmd + K`  | Focus chat input     |
 
 ## License
 
