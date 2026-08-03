@@ -23,7 +23,7 @@ A production-grade, streaming AI chat interface built with Next.js 16, featuring
 | AI SDK | Vercel AI SDK (`ai` package) |
 | LLM Provider | OpenAI / Anthropic (configurable) |
 | Authentication | NextAuth v5 + Firebase Admin |
-| Database | Prisma ORM + SQLite (dev) / PostgreSQL (prod) |
+| Database | Prisma ORM + PostgreSQL (Neon, free tier) |
 | Rate Limiting | Upstash Redis |
 | Styling | Tailwind CSS v4 |
 | UI Components | CVA, Lucide React, Framer Motion |
@@ -48,7 +48,7 @@ Fill in the required values:
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | SQLite path, e.g. `file:./dev.db` |
+| `DATABASE_URL` | Neon PostgreSQL connection string, e.g. `postgresql://user:pass@host/db?sslmode=require` |
 | `NEXTAUTH_URL` | Your app URL, e.g. `http://localhost:3000` |
 | `NEXTAUTH_SECRET` | Generate with `openssl rand -base64 32` |
 | `OPENAI_API_KEY` | Your OpenAI API key |
@@ -66,13 +66,20 @@ npm install
 
 ### Database Setup
 
+> **Note:** The local dev database uses SQLite (`prisma/dev.db`). For production (Vercel), use Neon PostgreSQL.
+
 ```bash
+# Push schema to local SQLite database (dev)
+npm run db:push
+
 # Generate Prisma client
 npm run db:generate
 
-# Push schema to database
-npm run db:push
+# (Optional) Open Prisma Studio
+npm run db:studio
 ```
+
+For **production (Vercel)**, set `DATABASE_URL` as an environment variable in the Vercel dashboard to your Neon PostgreSQL connection string.
 
 ### Development
 
@@ -105,7 +112,7 @@ npm run db:studio    # Open Prisma Studio
 
 ```
 ├── prisma/
-│   └── schema.prisma          # Database schema (SQLite dev / PostgreSQL prod)
+│   └── schema.prisma          # Database schema (PostgreSQL)
 ├── src/
 │   ├── app/
 │   │   ├── api/
