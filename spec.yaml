@@ -1,0 +1,51 @@
+module: core_chat_streaming
+tier: 1
+
+business_rules:
+  - id: generate_title_on_first_message
+    description: "If this is the first message in a newly created chatId, trigger a background AI task to generate a short title based on the user's input."
+    conditions:
+      - 'messages.length === 1'
+    actions:
+      - 'async_generate_title() AND update_db_title()'
+
+  - id: prevent_empty_submission
+    description: 'Users cannot submit empty or whitespace-only strings.'
+    conditions:
+      - 'input.trim().length === 0'
+    actions:
+      - 'disable_submit_button'
+
+api_contract:
+  endpoints:
+    - path: 'POST /api/chat'
+      type: 'HTTP Streaming (text/event-stream) using Vercel AI SDK'
+      security: 'Bearer Session + Rate Limited'
+  error_codes: ['UNAUTHORIZED', 'RATE_LIMIT_EXCEEDED', 'LLM_PROVIDER_TIMEOUT']
+
+database:
+  tables: ['users', 'chats', 'messages']
+  transaction_boundary:
+    - 'Saving the User message and the Assistant response MUST happen in a single asynchronous batch operation after the stream finishes (via onFinish callback).'
+  indexing: 'Ensure an index on chats(userId, createdAt DESC) for fast sidebar loading.'
+
+security:
+  authorization:
+    - resource: chat
+      action: read_and_write
+      rule: 'chat.userId === current_user.id'
+  threat_checklist:
+    - idor: 'Validate chatId ownership on the server before fetching or updating the messages array.'
+    - rate_limit: 'Implement Rate Limiting (e.g., using Upstash Redis) to prevent spam requests.'
+    - billing_abuse: 'Strictly cap maxTokens in the AI SDK configuration (e.g., 2048 tokens).'
+
+testing:
+  definition_of_done:
+    - 'The Stop button must immediately halt the generation stream and persist the partial text to the database.'
+    - 'Attempting to access /chat/:id belonging to another user must return a 404 or 403 HTTP status.'
+    - 'Rapid repetitive form submissions must be blocked by the rate limiter (returning HTTP 429).'
+
+acceptance_criteria:
+  - 'The system MUST stream tokens seamlessly without React hydration mismatches or UI flickering.'
+  - 'The system MUST pin the scroll position to the bottom while streaming, UNLESS the user manually scrolls up, at which point the auto-scroll MUST gracefully disengage.'
+  - 'The system MUST securely limit chat data access based on the currently authenticated session.'

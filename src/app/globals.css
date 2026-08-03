@@ -1,0 +1,568 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   CSS CUSTOM PROPERTIES — Nexus AI · Warm Neutral Theme
+   ============================================================ */
+
+/* ── Brand palette ─────────────────────────────────────────── */
+:root {
+  /* Paper & Ink */
+  --background:        #F2EFE6;
+  --foreground:        #2C2A26;
+
+  /* Deep teal — primary accent (send button, user bubble, highlights) */
+  --brand-primary:     #4A6B7C;
+  --brand-primary-hover:#3d5a69;
+  --brand-secondary:    #5C7A5E;
+  --brand-gradient-start: #4A6B7C;
+  --brand-gradient-end:   #5C7A5E;
+
+  /* Sage — secondary accent (badge, active nav, hover states) */
+  --accent-sage:       #5C7A5E;
+
+  /* Earth brown — tertiary (links, subtle accents) */
+  --accent-earth:      #8A5A3B;
+
+  /* Border / divider — warm dark tint from paper */
+  --border-default:    rgba(44, 42, 38, 0.10);
+  --border-hover:      rgba(44, 42, 38, 0.18);
+  --border-glow:       rgba(74, 107, 124, 0.30);
+
+  /* ── Message bubbles ─────────────────────────────────────── */
+  /* User: deep teal solid → white/off-white text */
+  --user-bubble-bg:    #4A6B7C;
+  --user-bubble-text:  #F2EFE6;
+
+  /* Assistant: warm white surface — slightly elevated from paper */
+  --assistant-bubble-bg:    rgba(255, 253, 248, 0.96);
+  --assistant-bubble-border:rgba(44, 42, 38, 0.08);
+  --assistant-bubble-text:  #2C2A26;
+
+  /* ── Surface layers ──────────────────────────────────────── */
+  /* Sidebar: darkest warm surface, still warmer than old dark */
+  --surface-primary:   rgba(44, 42, 38, 0.97);
+  --surface-secondary: rgba(44, 42, 38, 0.88);
+  --surface-elevated:  rgba(44, 42, 38, 0.94);
+  --surface-glass:     rgba(44, 42, 38, 0.82);
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  --sidebar-bg:        rgba(44, 42, 38, 0.97);
+  --sidebar-border:    rgba(255, 255, 255, 0.06);
+  --sidebar-item-hover:rgba(255, 255, 255, 0.06);
+  /* Active: sage tint — low opacity so text stays dark/ink */
+  --sidebar-item-active:rgba(92, 122, 94, 0.14);
+
+  /* ── Text ────────────────────────────────────────────────── */
+  --text-primary:   #2C2A26;
+  --text-secondary: #6B6860;
+  --text-muted:    #9E9B94;
+
+  /* ── Glows & Shadows ─────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px 0 rgb(44 42 38 / 0.25);
+  --shadow-md: 0 4px 6px -1px rgb(44 42 38 / 0.20), 0 2px 4px -2px rgb(44 42 38 / 0.15);
+  --shadow-lg: 0 10px 15px -3px rgb(44 42 38 / 0.22), 0 4px 6px -4px rgb(44 42 38 / 0.18);
+  --shadow-xl: 0 20px 25px -5px rgb(44 42 38 / 0.22), 0 8px 10px -6px rgb(44 42 38 / 0.18);
+}
+
+/* ── Dark overlay helpers (for overlays on warm-paper BG) ──── */
+.dark-overlay {
+  background: rgba(44, 42, 38, 0.88);
+}
+
+/* ============================================================
+   DYNAMIC VIEWPORT UNITS
+   ============================================================ */
+
+.dvh-safe {
+  height: 100dvh;
+  height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(74, 107, 124, 0.18);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 107, 124, 0.35);
+}
+
+/* ============================================================
+   MESH BACKGROUND
+   ============================================================ */
+
+.mesh-bg {
+  background-color: var(--background);
+}
+
+/* ============================================================
+   MARKDOWN CONTENT STYLES
+   ============================================================ */
+
+.markdown-content {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--assistant-bubble-text);
+}
+
+.markdown-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #2C2A26 0%, #6B6860 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.markdown-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #3C3A36;
+}
+
+.markdown-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #3C3A36;
+}
+
+.markdown-content p {
+  margin-bottom: 0.875rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.875rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.375rem;
+}
+
+.markdown-content ul li {
+  list-style-type: disc;
+}
+
+.markdown-content ol li {
+  list-style-type: decimal;
+}
+
+/* Inline code: earth brown tint */
+.markdown-content code:not(pre code) {
+  background: rgba(138, 90, 59, 0.10);
+  border: 1px solid rgba(138, 90, 59, 0.18);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875em;
+  font-family:
+    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  color: var(--accent-earth);
+}
+
+.markdown-content pre {
+  margin-bottom: 0.875rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.markdown-content pre code {
+  font-family:
+    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-content a {
+  color: var(--accent-earth);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms ease;
+}
+
+.markdown-content a:hover {
+  color: #6E4529;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid rgba(74, 107, 124, 0.35);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid var(--border-default);
+  margin: 1.5rem 0;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  margin-bottom: 0.875rem;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--border-default);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-content th {
+  background: rgba(74, 107, 124, 0.06);
+  font-weight: 600;
+  color: #3C3A36;
+}
+
+.markdown-content tr:nth-child(even) {
+  background: rgba(44, 42, 38, 0.03);
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: #3C3A36;
+}
+
+.markdown-content img {
+  border-radius: 0.5rem;
+  max-width: 100%;
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%            { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes glow-ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-2px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   ANIMATION CLASSES
+   ============================================================ */
+
+.animate-fade-in {
+  animation: fade-in 300ms ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1.5s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(44, 42, 38, 0) 0%,
+    rgba(44, 42, 38, 0.08) 50%,
+    rgba(44, 42, 38, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Think indicator dots */
+.thinking-dot {
+  animation: pulse-dot 1.4s infinite ease-in-out both;
+}
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+.thinking-dot:nth-child(3) { animation-delay:  0s;    }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.scroll-container {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.message-enter {
+  animation: slide-up 300ms ease-out forwards;
+}
+
+/* Glass morphism — warm tinted */
+.glass {
+  background: var(--assistant-bubble-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--assistant-bubble-border);
+}
+
+.glass-strong {
+  background: rgba(44, 42, 38, 0.93);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Focus ring — teal tint */
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(74, 107, 124, 0.55);
+  outline-offset: 2px;
+}
+
+/* Glow border — teal */
+.glow-border {
+  border: 1px solid rgba(74, 107, 124, 0.40);
+}
+
+/* Text gradient — teal → sage */
+.text-gradient {
+  background: linear-gradient(135deg, #4A6B7C 0%, #5C7A5E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   MOBILE RESPONSIVENESS
+   ============================================================ */
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-area-inset-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 640px) {
+  .chat-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .mobile-bubble {
+    max-width: 88%;
+  }
+  .mobile-jump-btn {
+    bottom: 12px;
+    right: 12px;
+  }
+  .mobile-input {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 375px) {
+  .compact-spacing {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* ============================================================
+   MESSAGE ACTION BAR
+   ============================================================ */
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+  transition: color 150ms ease, background-color 150ms ease;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  color: var(--text-secondary);
+  background-color: rgba(44, 42, 38, 0.07);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Active: sage accent */
+.action-btn-active {
+  color: var(--accent-sage) !important;
+  background-color: rgba(92, 122, 94, 0.12) !important;
+}
+
+.action-btn-active:hover {
+  color: #3C5A3E !important; /* dark ink on sage tint — passes WCAG AA */
+  background-color: rgba(92, 122, 94, 0.18) !important;
+}
+
+/* ============================================================
+   REASONING BLOCK
+   ============================================================ */
+
+.reasoning-block {
+  animation: slide-up 200ms ease-out;
+}
+
+.reasoning-block .reasoning-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(74, 107, 124, 0.18);
+  background-color: rgba(74, 107, 124, 0.06);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  width: 100%;
+}
+
+.reasoning-block .reasoning-toggle:hover {
+  background-color: rgba(74, 107, 124, 0.10);
+}
+
+/* ============================================================
+   INSTRUCT POPUP
+   ============================================================ */
+
+.instruct-popup {
+  background: rgba(44, 42, 38, 0.97);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.875rem;
+  padding: 0.875rem;
+  box-shadow: 0 8px 32px -4px rgb(44 42 38 / 0.35);
+  max-width: 480px;
+}
+
+/* ============================================================
+   HIDDEN MESSAGE
+   ============================================================ */
+
+.hidden-message {
+  display: none !important;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  color: var(--text-secondary);
+  transition: background-color 150ms ease, color 150ms ease;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.sidebar-item:hover {
+  background-color: var(--sidebar-item-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background-color: var(--sidebar-item-active);
+  color: var(--accent-sage);
+}
+
+/* ============================================================
+   COPIED TOAST
+   ============================================================ */
+
+.copied-toast {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  background-color: rgba(74, 107, 124, 0.12);
+  border: 1px solid rgba(74, 107, 124, 0.20);
+  color: var(--brand-primary);
+  font-size: 0.75rem;
+  pointer-events: none;
+  animation: fade-in 150ms ease-out;
+}
