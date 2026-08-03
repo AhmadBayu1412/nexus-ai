@@ -55,16 +55,22 @@ export const ChatUI = memo(function ChatUI({
   const [isPinned, setIsPinned] = useState(true);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lastInputRef = useRef<string>('');
-  const hasNotifiedChatCreated = useRef(false);
-  const [isWithinThinkingWindow, dispatchThinking] = useReducer(
+  const [isThinking, dispatchThinking] = useReducer(
     (_prev: boolean, action: 'show' | 'hide') => action === 'show',
     false
   );
+  const lastInputRef = useRef<string>('');
+  const hasNotifiedChatCreated = useRef(false);
   const thinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Stable ref for onChatCreated — avoids recreating customFetch on every render
+  const onChatCreatedRef = useRef(onChatCreated);
+  useEffect(() => {
+    onChatCreatedRef.current = onChatCreated;
+  });
 
   // Custom fetch with Firebase Auth headers
+  // NOTE: only depends on chatId — stable across renders to prevent stream reinit
   const customFetch = useCallback(
     async (
       input: RequestInfo | URL,
@@ -100,22 +106,9 @@ export const ChatUI = memo(function ChatUI({
         signal: init?.signal,
       });
 
-      if (
-        response.headers &&
-        onChatCreated &&
-        chatId.startsWith('new-') &&
-        !hasNotifiedChatCreated.current
-      ) {
-        const newChatId = response.headers.get('X-Chat-Id');
-        if (newChatId && !newChatId.startsWith('new-')) {
-          hasNotifiedChatCreated.current = true;
-          onChatCreated(newChatId);
-        }
-      }
-
       return response;
     },
-    [chatId, onChatCreated]
+    [chatId]
   );
 
   const {
@@ -140,12 +133,28 @@ export const ChatUI = memo(function ChatUI({
         content: m.content,
       })),
     body: { chatId },
+    onResponse: (response) => {
+      // Only trigger once: when new-chat stream starts, capture real chat ID from header
+      if (
+        onChatCreatedRef.current &&
+        chatId.startsWith('new-') &&
+        !hasNotifiedChatCreated.current
+      ) {
+        const newChatId = response.headers.get('X-Chat-Id');
+        if (newChatId && !newChatId.startsWith('new-')) {
+          hasNotifiedChatCreated.current = true;
+          onChatCreatedRef.current(newChatId);
+        }
+      }
+    },
     onFinish: () => {
+      dispatchThinking('hide');
       if (isPinned && containerRef.current) {
         containerRef.current.scrollTop = containerRef.current.scrollHeight;
       }
     },
     onError: (err) => {
+      dispatchThinking('hide');
       console.error('[ChatUI] Stream error:', err);
       let message = err.message || 'An error occurred';
       try {
@@ -169,15 +178,13 @@ export const ChatUI = memo(function ChatUI({
   const { toast } = useToast();
 
   const lastMessage = messages.at(-1);
-  const showThinking =
-    isLoading &&
-    lastMessage?.role === 'assistant' &&
-    isWithinThinkingWindow;
+  const showThinking = isThinking && isLoading && lastMessage?.role === 'assistant';
 
   // Show thinking indicator for first 5s of a stream, then fade out
   useEffect(() => {
     if (isLoading) {
       dispatchThinking('show');
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
       thinkingTimerRef.current = setTimeout(() => {
         dispatchThinking('hide');
       }, 5000);
@@ -186,6 +193,7 @@ export const ChatUI = memo(function ChatUI({
         clearTimeout(thinkingTimerRef.current);
         thinkingTimerRef.current = null;
       }
+      dispatchThinking('hide');
     }
     return () => {
       if (thinkingTimerRef.current) {
@@ -317,8 +325,6 @@ export const ChatUI = memo(function ChatUI({
     },
     [append]
   );
-
-  // ─── Copy toast is handled internally by ChatMessage ───────────────────────
 
   // Starter prompt click handler
   const handleStarterClick = (prompt: string) => {
