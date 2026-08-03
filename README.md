@@ -2,32 +2,48 @@
 
 A production-grade, streaming AI chat interface built with Next.js 16, featuring real-time token streaming, chat history persistence, multi-provider AI support, and Firebase + NextAuth authentication.
 
+[**Live Demo**](https://nexus-ai-chatbot-opal.vercel.app/) &nbsp;·&nbsp; [**GitHub**](https://github.com/AhmadBayu1412/nexus-ai)
+
+![Nexus AI — Chat Streaming](docs/screenshots/chat-streaming.png)
+![Nexus AI — Chat List](docs/screenshots/chat-list.png)
+
 ## Features
 
-- **Real-Time Streaming** — Token-by-token responses streamed directly from the LLM
-- **Chat History** — Persistent conversations with automatic title generation
-- **Smart Auto-scroll** — Pins to bottom during streaming, releases when you scroll up
-- **Markdown Rendering** — Beautiful code blocks, lists, tables, and formatting
-- **Thinking Indicator** — Shows AI reasoning/thinking process before response
+### Core Experience
+- **Token-by-Token Streaming** — Real-time responses streamed directly from the LLM as tokens arrive
+- **Multi-Turn Conversation State** — Full conversation history preserved across turns
+- **Server-Side API Key** — API keys secured on the server, never exposed to the client
+
+### UI & UX
+- **Smart Auto-scroll** — Pins to bottom during streaming, releases automatically when you scroll up
+- **Stop Button** — Cancel an in-flight streaming response mid-generation
+- **Thinking Indicator Handoff** — Smooth transition from "AI is thinking" to final response
+- **Chat Bubbles** — Clean, visually distinct user and assistant message bubbles
+- **Empty State / Starter Suggestions** — Helpful prompts for new users before any conversation starts
+- **Mobile-Friendly Layout** — Fully responsive, adapts cleanly from desktop to mobile
+
+### Platform
+- **Markdown Rendering** — Beautiful code blocks with syntax highlighting, lists, tables, and formatting
 - **Multi-Provider AI** — OpenAI GPT-4, Anthropic Claude (configurable per request)
+- **Chat History** — Persistent conversations with automatic title generation
 - **Message Feedback** — Thumbs up/down on AI responses
 - **Security** — IDOR protection, rate limiting, NextAuth session + Firebase auth
 - **Responsive Design** — Works on desktop and mobile
 
 ## Tech Stack
 
-| Category       | Technology                                |
-| -------------- | ----------------------------------------- |
-| Framework      | Next.js 16 (App Router, Turbopack)        |
-| Language       | TypeScript                                |
-| AI SDK         | Vercel AI SDK (`ai` package)              |
-| LLM Provider   | OpenAI / Anthropic (configurable)         |
-| Authentication | NextAuth v5 + Firebase Admin              |
-| Database       | Prisma ORM + PostgreSQL (Neon, free tier) |
-| Rate Limiting  | Upstash Redis                             |
-| Styling        | Tailwind CSS v4                           |
-| UI Components  | CVA, Lucide React, Framer Motion          |
-| Deployment     | Vercel                                    |
+| Category | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript |
+| AI SDK | Vercel AI SDK (`ai` package) |
+| LLM Provider | OpenAI / Anthropic (configurable) |
+| Authentication | NextAuth v5 + Firebase Admin |
+| Database | Prisma ORM + PostgreSQL (Neon, free tier) |
+| Rate Limiting | Upstash Redis |
+| Styling | Tailwind CSS v4 |
+| UI Components | CVA, Lucide React, Framer Motion |
+| Deployment | Vercel |
 
 ## Getting Started
 
@@ -46,17 +62,17 @@ cp .env.example .env.local
 
 Fill in the required values:
 
-| Variable                                | Description                                                                              |
-| --------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                          | Neon PostgreSQL connection string, e.g. `postgresql://user:pass@host/db?sslmode=require` |
-| `NEXTAUTH_URL`                          | Your app URL, e.g. `http://localhost:3000`                                               |
-| `NEXTAUTH_SECRET`                       | Generate with `openssl rand -base64 32`                                                  |
-| `OPENAI_API_KEY`                        | Your OpenAI API key                                                                      |
-| `ANTHROPIC_API_KEY`                     | (Optional) Your Anthropic API key                                                        |
-| `UPSTASH_REDIS_REST_URL`                | Upstash Redis REST URL                                                                   |
-| `UPSTASH_REIS_REST_TOKEN`               | Upstash Redis REST Token                                                                 |
-| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth App credentials                                                             |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google OAuth App credentials                                                             |
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Neon PostgreSQL connection string, e.g. `postgresql://user:pass@host/db?sslmode=require` |
+| `NEXTAUTH_URL` | Your app URL, e.g. `http://localhost:3000` |
+| `NEXTAUTH_SECRET` | Generate with `openssl rand -base64 32` |
+| `OPENAI_API_KEY` | Your OpenAI API key |
+| `ANTHROPIC_API_KEY` | (Optional) Your Anthropic API key |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth App credentials |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google OAuth App credentials |
 
 ### Installation
 
@@ -155,7 +171,7 @@ npm run db:studio    # Open Prisma Studio
 │   └── types/
 │       └── chat.ts
 ├── docs/
-│   └── layers/                    # Architecture documentation
+│   └── screenshots/              # App screenshots
 ├── next.config.ts
 ├── eslint.config.mjs
 ├── postcss.config.mjs
@@ -185,12 +201,12 @@ Detailed documentation is available in the `docs/` directory:
 
 ## Keyboard Shortcuts
 
-| Shortcut        | Action               |
-| --------------- | -------------------- |
-| `Enter`         | Send message         |
+| Shortcut | Action |
+|---|---|
+| `Enter` | Send message |
 | `Shift + Enter` | New line in textarea |
-| `Escape`        | Stop generation      |
-| `Ctrl/Cmd + K`  | Focus chat input     |
+| `Escape` | Stop generation |
+| `Ctrl/Cmd + K` | Focus chat input |
 
 ## License
 

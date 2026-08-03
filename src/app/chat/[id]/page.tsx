@@ -27,8 +27,12 @@ export default function ChatPage() {
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [currentChat, setCurrentChat] = useState<ChatData | null>(null);
   const [isLoadingChat, setIsLoadingChat] = useState(true);
+  // authReady = false while Firebase auth is still initializing.
+  // Prevents premature renders when auth is mid-initialization on Vercel cold start.
+  // Derived directly from loading — no setState in effects needed (React 19 compat).
+  const authReady = !loading;
 
-  // Stable ref for auth-dependent operations — avoids re-render triggers
+  // Stable ref for auth-dependent operations — avoids stale closure issues
   const authRef = useRef({ user, loading, getIdToken, router });
   useEffect(() => {
     authRef.current = { user, loading, getIdToken, router };
@@ -98,19 +102,19 @@ export default function ChatPage() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // Auth guard + data fetch — NO router in deps (useRef instead)
+  // Auth guard + data fetch — runs when auth settles and user is confirmed
   useEffect(() => {
-    const { user, loading, router } = authRef.current;
-    if (!loading && !user) {
+    if (!authReady) return;
+
+    const { user, router } = authRef.current;
+    if (!user) {
       router.push('/');
       return;
     }
-    if (!user) return;
 
-    // Only fetch when user is available — stable, no extra deps
     fetchChats();
     fetchChat();
-  }, [user, loading, fetchChats, fetchChat]); // router NOT in deps
+  }, [authReady, user, fetchChats, fetchChat]);
 
   const handleDeleteChat = useCallback(async (chatId: string) => {
     const { getIdToken, router } = authRef.current;
