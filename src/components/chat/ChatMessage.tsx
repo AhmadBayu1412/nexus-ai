@@ -33,6 +33,23 @@ import {
 } from 'lucide-react';
 import type { ChatMessage as ChatMessageType, MessageFeedback } from '@/types/chat';
 import { cn } from '@/lib/utils';
+import { ToolLoading } from './ToolLoading';
+import { LeadScoreCard } from './LeadScoreCard';
+import { ToolError } from './ToolError';
+
+// ── Tool invocation types (mirrors Vercel AI SDK shape) ─────────────────────────
+export type ToolArg = Record<string, unknown>;
+export type ToolResult =
+  | { score: number; verdict: string; analysis: string[] }
+  | { [key: string]: unknown };
+
+export interface ToolInvocation {
+  toolName: string;
+  toolCallId: string;
+  state: 'partial-call' | 'call' | 'result';
+  args?: ToolArg;
+  result?: ToolResult;
+}
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -42,6 +59,21 @@ interface ChatMessageProps {
   onFeedback?: (feedback: MessageFeedback) => void;
   onCopy?: (text: string) => void;
   canRegenerate?: boolean;
+  /** Tool invocations from Vercel AI SDK message.toolInvocations */
+  toolInvocations?: ToolInvocation[];
+  /**
+   * IDs of tool calls currently in EXECUTING phase (between partial-call/streaming
+   * and result). This fills the gap: AI SDK's 'call' state never reaches client,
+   * so we track execution via onToolCall in ChatUI. Bug #3 fix.
+   */
+  toolExecutingIds?: Set<string>;
+  /**
+   * Called when a tool result arrives. Used by ChatUI to clear the executing ID
+   * from toolExecutingIds so the spinner transitions to the result card.
+   */
+  onClearToolExecuting?: (toolCallId: string) => void;
+  /** Callback to retry a failed tool invocation */
+  onRetryTool?: (toolCallId: string, toolName: string, args: ToolArg) => void;
 }
 
 const MESSAGE_VARIANTS = {
@@ -143,45 +175,6 @@ function UserAvatar() {
   );
 }
 
-/* Thinking indicator dots — teal/sage palette */
-function ThinkingIndicator() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -6, scale: 0.96 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="mt-3 flex items-center gap-2.5 px-4 py-3 rounded-xl w-fit"
-      style={{
-        background: 'rgba(44, 42, 38, 0.90)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(44, 42, 38, 0.12)',
-      }}
-    >
-      <div className="relative shrink-0">
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #4A6B7C 0%, #3d5a69 100%)' }}
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2a10 10 0 1 0 10 10"/>
-            <path d="M12 12 12 6"/>
-            <path d="M12 12 16 14"/>
-            <circle cx="18" cy="6" r="3"/>
-            <path d="M18 3v6"/>
-          </svg>
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <span className="thinking-dot w-1.5 h-1.5 rounded-full" style={{ background: '#4A6B7C' }}/>
-        <span className="thinking-dot w-1.5 h-1.5 rounded-full" style={{ background: '#5C7A5E' }}/>
-        <span className="thinking-dot w-1.5 h-1.5 rounded-full" style={{ background: '#4A6B7C' }}/>
-      </div>
-      <span className="text-sm font-medium text-gradient">AI is thinking</span>
-      <span style={{ color: '#9E9B94' }}>...</span>
-    </motion.div>
-  );
-}
 
 interface MessageActionBarProps {
   content: string;
@@ -404,6 +397,10 @@ export function ChatMessage({
   onFeedback,
   onCopy,
   canRegenerate = false,
+  toolInvocations = [],
+  toolExecutingIds = new Set(),
+  onClearToolExecuting,
+  onRetryTool,
 }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
@@ -611,6 +608,120 @@ export function ChatMessage({
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* ── Tool Invocations (4-state machine) ─────────────────────── */}
+              <AnimatePresence mode="wait">
+                {toolInvocations.map((invocation) => {
+                  const { toolCallId, toolName, state, args, result } = invocation;
+                  const isExecuting = toolExecutingIds.has(toolCallId);
+
+                  // STATE 1 — input streaming (model streaming JSON args)
+                  if (state === 'partial-call' && !isExecuting) {
+                    return (
+                      <ToolLoading
+                        key={toolCallId}
+                        phase="streaming"
+                        toolName={toolName}
+                        className="mt-3"
+                      />
+                    );
+                  }
+
+                  // STATE 2 — executing (onToolCall fired, result not yet received)
+                  // Bug #3 fix: 'call' state never reaches client, so we use
+                  // toolExecutingIds Set as proxy. Show spinner during 2.5s delay.
+                  if (state === 'partial-call' && isExecuting) {
+                    return (
+                      <ToolLoading
+                        key={toolCallId}
+                        phase="executing"
+                        toolName={toolName}
+                        className="mt-3"
+                      />
+                    );
+                  }
+
+                  // STATE 3a — research_company result (internal — never shown in UI)
+                  // Note: onClearToolExecuting is NOT called here — ChatUI handles
+                  // cleanup via useEffect watching toolInvocations changes.
+                  if (state === 'result' && (toolName === 'research_company' || toolName === 'researchCompanyTool')) {
+                    return null; // research_company is an intermediate tool
+                  }
+
+                  // STATE 3b — score_lead result with error (graceful failure)
+                  if (
+                    state === 'result' &&
+                    (toolName === 'score_lead' || toolName === 'scoreLeadTool') &&
+                    result &&
+                    typeof result === 'object' &&
+                    'error' in result
+                  ) {
+                    const errorMessage = String((result as { error: unknown }).error ?? 'Unknown error');
+                    return (
+                      <ToolError
+                        key={toolCallId}
+                        message={errorMessage}
+                        toolName={toolName}
+                        onRetry={
+                          onRetryTool
+                            ? () => onRetryTool(toolCallId, toolName, args ?? {})
+                            : undefined
+                        }
+                        className="mt-3"
+                      />
+                    );
+                  }
+
+                  // STATE 4 — output available (tool returned successfully)
+                  if (
+                    state === 'result' &&
+                    result &&
+                    typeof result === 'object' &&
+                    'score' in result
+                  ) {
+                    // Note: onClearToolExecuting is NOT called here — ChatUI handles
+                    // cleanup via useEffect watching toolInvocations changes.
+                    const data = result as {
+                      score: number;
+                      verdict: string;
+                      analysis: string[];
+                      hasResearch?: boolean;
+                      researchSources?: Array<{ title: string; url: string }>;
+                    };
+                    return (
+                      <LeadScoreCard
+                        key={toolCallId}
+                        score={data.score}
+                        verdict={data.verdict}
+                        analysis={data.analysis}
+                        companyName={args?.companyName as string | undefined}
+                        hasResearch={data.hasResearch}
+                        researchSources={data.researchSources}
+                        className="mt-3"
+                      />
+                    );
+                  }
+
+                  // Guard: result state but unknown shape — treat as unknown error
+                  if (state === 'result') {
+                    return (
+                      <ToolError
+                        key={toolCallId}
+                        message="Tool returned an unexpected response format."
+                        toolName={toolName}
+                        onRetry={
+                          onRetryTool
+                            ? () => onRetryTool(toolCallId, toolName, args ?? {})
+                            : undefined
+                        }
+                        className="mt-3"
+                      />
+                    );
+                  }
+
+                  return null;
+                })}
+              </AnimatePresence>
 
               {/* Action bar */}
               {showActionBar && (

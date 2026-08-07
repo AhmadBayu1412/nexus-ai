@@ -133,6 +133,10 @@ export const ChatUI = memo(function ChatUI({
         content: m.content,
       })),
     body: { chatId },
+    onToolCall: () => {
+      // Tool call detected — useChat handles the state internally
+      // Tool invocation state transitions: partial-call → result
+    },
     onResponse: (response) => {
       // Only trigger once: when new-chat stream starts, capture real chat ID from header
       if (
@@ -303,8 +307,9 @@ export const ChatUI = memo(function ChatUI({
       if (prev.length === 0) return prev;
       return prev.slice(0, -1);
     });
+    const inputToRetry = lastInputRef.current;
     setTimeout(() => {
-      setInput(lastInputRef.current);
+      setInput(inputToRetry);
       setTimeout(() => {
         const form = document.querySelector('form') as HTMLFormElement;
         if (form) form.requestSubmit();
@@ -312,6 +317,26 @@ export const ChatUI = memo(function ChatUI({
     }, 50);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable context ref
   }, [stop, setMessages, setInput]);
+
+  // ─── Retry Tool ─────────────────────────────────────────────────────────────
+  /** Called by ToolError when user clicks "Try Again". */
+  const handleRetryTool = useCallback(
+    async (_toolCallId: string, _toolName: string, args: Record<string, unknown>) => {
+      toast({ message: '🔄 Retrying...', type: 'info', duration: 2000 });
+      const companyName = args.companyName as string | undefined;
+      const industry = args.industry as string | undefined;
+      const companySize = args.companySize as string | undefined;
+      const sizeText = companySize ? `, company size: ${companySize}` : '';
+      const text = `Score lead: ${companyName}, industry: ${industry}${sizeText}`;
+      append({
+        id: `retry-${Date.now()}`,
+        role: 'user',
+        content: text,
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable context ref
+    [append]
+  );
 
   // ─── Instruct ────────────────────────────────────────────────────────────────
   const handleInstruct = useCallback(
@@ -496,6 +521,8 @@ export const ChatUI = memo(function ChatUI({
                       onInstruct={handleInstruct}
                       onFeedback={(fb) => handleFeedback(message.id, fb)}
                       canRegenerate={isLastAssistant && !isLoading}
+                      toolInvocations={message.toolInvocations as import('@/components/chat/ChatMessage').ToolInvocation[] | undefined}
+                      onRetryTool={handleRetryTool}
                     />
                   </div>
                 );
