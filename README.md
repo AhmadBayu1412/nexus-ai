@@ -2,7 +2,7 @@
 
 A production-grade, streaming AI chat interface built with Next.js 16, featuring real-time token streaming, chat history persistence, multi-provider AI support, and Firebase + NextAuth authentication.
 
-[**Live Demo**](https://nexus-ai-chatbot-opal.vercel.app/) &nbsp;·&nbsp; [**GitHub**](https://github.com/AhmadBayu1412/nexus-ai)
+[**Live Demo**]([https://nexus-ai-chatbot-opal.vercel.app/](https://nexus-ai-chat-five.vercel.app/chat)) &nbsp;·&nbsp; [**GitHub**](https://github.com/AhmadBayu1412/nexus-ai)
 
 ![Nexus AI — Chat Streaming](docs/screenshots/chat-streaming.png)
 ![Nexus AI — Chat List](docs/screenshots/chat-list.png)
