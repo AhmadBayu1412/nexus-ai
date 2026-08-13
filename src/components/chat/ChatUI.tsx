@@ -12,6 +12,7 @@ import { useRef, useEffect, useState, useCallback, useReducer, memo } from 'reac
 import { useChat } from 'ai/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatMessage } from './ChatMessage';
+import { EmptyState } from './EmptyState';
 import { JumpToLatest } from './JumpToLatest';
 import { ChatInput } from './ChatInput';
 import { ThinkingIndicator } from './ThinkingIndicator';
@@ -26,13 +27,6 @@ interface ChatUIProps {
   onTitleChange?: (title: string) => void;
   onChatCreated?: (chatId: string) => void;
 }
-
-const STARTER_PROMPTS = [
-  'Explain how Server-Sent Events work in 2 sentences',
-  'Refactor this React hook to use best practices',
-  'Debug my async function and explain the issue',
-  'Write a clean TypeScript utility function',
-];
 
 function transformMessage(
   msg: { id: string; role: string; content: string; createdAt?: Date }
@@ -54,7 +48,11 @@ export const ChatUI = memo(function ChatUI({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPinned, setIsPinned] = useState(true);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isThinking, dispatchThinking] = useReducer(
     (_prev: boolean, action: 'show' | 'hide') => action === 'show',
     false
@@ -93,7 +91,26 @@ export const ChatUI = memo(function ChatUI({
           idToken = await firebaseUser.getIdToken(true);
         }
       } catch (err) {
-        console.error('[ChatUI] Failed to get Firebase ID token:', err);
+        // Firebase token fetch failed — proceed without token
+        // The 401 response from the server will surface the auth error via chatError
+      }
+
+      // Wrap with a short timeout signal so offline connections fail fast (~10s)
+      // instead of hanging indefinitely. Chains with useChat's own abort signal
+      // so user-initiated stops still work normally.
+      const parentSignal = init?.signal;
+      let combinedSignal: AbortSignal;
+      if (parentSignal) {
+        const timeoutSignal = AbortSignal.timeout(10_000);
+        // AbortSignal.any is available in modern browsers (Chrome 116+, FF 129+, Safari 17.4+)
+        if (typeof AbortSignal.any === 'function') {
+          combinedSignal = AbortSignal.any([parentSignal, timeoutSignal]);
+        } else {
+          // Fallback for older browsers: parent signal takes precedence
+          combinedSignal = parentSignal;
+        }
+      } else {
+        combinedSignal = AbortSignal.timeout(10_000);
       }
 
       const response = await fetch(url, {
@@ -103,7 +120,18 @@ export const ChatUI = memo(function ChatUI({
           ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
         body,
-        signal: init?.signal,
+        signal: combinedSignal,
+      }).catch((fetchErr) => {
+        // If the fetch failed because our timeout/abort fired, surface it as a
+        // network error so onError fires and the error banner appears immediately.
+        if (fetchErr.name === 'AbortError' || fetchErr.name === 'TimeoutError') {
+          const netErr = new Error(
+            'Network error: Connection timed out or was aborted. Check your internet connection.'
+          );
+          (netErr as NodeJS.ErrnoException).cause = fetchErr;
+          throw netErr;
+        }
+        throw fetchErr;
       });
 
       return response;
@@ -119,6 +147,7 @@ export const ChatUI = memo(function ChatUI({
     handleSubmit: aiHandleSubmit,
     stop,
     error: chatError,
+    reload,
     append,
     setMessages,
   } = useChat({
@@ -159,7 +188,11 @@ export const ChatUI = memo(function ChatUI({
     },
     onError: (err) => {
       dispatchThinking('hide');
-      console.error('[ChatUI] Stream error:', err);
+      // Error is already surfaced via chatError state → visible Error UI
+      // Only log in development for debugging purposes
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ChatUI] Stream error:', err);
+      }
       let message = err.message || 'An error occurred';
       try {
         const parsed = JSON.parse(message);
@@ -174,8 +207,8 @@ export const ChatUI = memo(function ChatUI({
       ) {
         message = 'Authentication required. Please sign in again.';
       }
-      setError(message);
-      setTimeout(() => setError(null), 5000);
+      setLocalError(message);
+      setTimeout(() => setLocalError(null), 5000);
     },
   });
 
@@ -240,9 +273,18 @@ export const ChatUI = memo(function ChatUI({
 
   const handleFormSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    if (!isOnline) {
+      setLocalError('You are offline. Please check your internet connection.');
+      setTimeout(() => setLocalError(null), 4000);
+      return;
+    }
     if (!input.trim() || isLoading) return;
+    // Clear any pending error state on new submission
+    setLocalError(null);
     lastInputRef.current = input;
-    aiHandleSubmit(e as unknown as SubmitEvent & { target: HTMLFormElement });
+    // void operator suppresses unhandled rejection in dev overlay;
+    // the error is surfaced via chatError state + onError callback
+    void aiHandleSubmit(e as unknown as SubmitEvent & { target: HTMLFormElement });
   };
 
   useEffect(() => {
@@ -264,6 +306,27 @@ export const ChatUI = memo(function ChatUI({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // ─── Online/Offline listener ─────────────────────────────────────────────────
+  // Note: We do NOT guard on isLoading. When wifi drops mid-stream, the stream ends
+  // (isLoading → false) BEFORE the offline event fires, so the guard would always miss.
+  // Instead: offline ALWAYS sets localError; online clears it.
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setLocalError(null); // Clear any stale offline error when reconnecting
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setLocalError('Connection lost. Check your internet connection and try again.');
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   // ─── Feedback ────────────────────────────────────────────────────────────────
@@ -312,7 +375,7 @@ export const ChatUI = memo(function ChatUI({
       setInput(inputToRetry);
       setTimeout(() => {
         const form = document.querySelector('form') as HTMLFormElement;
-        if (form) form.requestSubmit();
+        if (form) void form.requestSubmit();
       }, 30);
     }, 50);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable context ref
@@ -351,12 +414,27 @@ export const ChatUI = memo(function ChatUI({
     [append]
   );
 
+  // ─── Stream Error Retry ───────────────────────────────────────────────────────
+  /** Retries only the last failed message using useChat's reload().
+   *  Clears localError first so the UI clears before reload fires.
+   *  .catch(()=>{}) prevents unhandled Promise rejection from bubbling up to
+   *  the Next.js dev overlay — the error is already handled via chatError state. */
+  const handleStreamRetry = useCallback(() => {
+    if (isRetrying) return;
+    setIsRetrying(true);
+    setLocalError(null); // Clear error UI immediately
+    reload().catch(() => {});
+    // onError will fire when the SDK catches the failure → chatError state updates
+    // Keep isRetrying guard active to prevent double-clicks
+    setTimeout(() => setIsRetrying(false), 2000);
+  }, [reload, isRetrying]);
+
   // Starter prompt click handler
   const handleStarterClick = (prompt: string) => {
     setInput(prompt);
     setTimeout(() => {
       const form = document.querySelector('form') as HTMLFormElement;
-      if (form) form.requestSubmit();
+      if (form) void form.requestSubmit();
     }, 50);
   };
 
@@ -391,39 +469,6 @@ export const ChatUI = memo(function ChatUI({
         </div>
       </div>
 
-      {/* Error toast */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-16 right-4 z-50 max-w-md"
-          >
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ background: 'rgba(44,42,38,0.95)', backdropFilter: 'blur(24px)', border: '1px solid rgba(239,68,68,0.20)' }}>
-              <div className="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0" style={{ background: 'rgba(239,68,68,0.15)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="m15 9-6 6" /><path d="m9 9 6 6" />
-                </svg>
-              </div>
-              <span className="flex-1" style={{ color: 'var(--text-primary)' }}>{error}</span>
-              <button
-                onClick={() => setError(null)}
-                className="p-1 rounded-lg transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                aria-label="Dismiss error"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-                </svg>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Messages container */}
       <div
         ref={containerRef}
@@ -433,73 +478,7 @@ export const ChatUI = memo(function ChatUI({
       >
         <div className="max-w-3xl mx-auto space-y-5">
           {messages.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-              className="flex flex-col items-center justify-center min-h-[60vh]"
-            >
-              <div className="relative mb-8 animate-float">
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, #4A6B7C 0%, #3d5a69 100%)',
-                    border: '1px solid rgba(44,42,38,0.12)',
-                  }}
-                >
-                  <BotIcon />
-                </div>
-                <div
-                  className="absolute inset-0 -z-10 rounded-2xl scale-110 opacity-30"
-                  style={{ background: 'radial-gradient(circle, rgba(74,107,124,0.5) 0%, transparent 70%)' }}
-                />
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">
-                <span className="text-gradient">How can I help you</span>
-                <br />
-                <span style={{ color: '#3C3A36' }}>today?</span>
-              </h2>
-              <p className="text-center mb-10 max-w-md leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                I&apos;m your AI assistant — great at coding, writing, analysis,
-                and creative tasks.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg px-4">
-                {STARTER_PROMPTS.map((prompt, i) => (
-                  <motion.button
-                    key={prompt}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.1 + i * 0.08, ease: 'easeOut' }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleStarterClick(prompt)}
-                    className="group relative px-4 py-3.5 rounded-xl text-left text-sm transition-all duration-200 focus-ring min-h-[56px] flex items-center"
-                    style={{
-                      background: 'rgba(255,253,248,0.90)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(44,42,38,0.10)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    <div
-                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(74,107,124,0.07) 0%, transparent 60%)',
-                        border: '1px solid rgba(74,107,124,0.14)',
-                      }}
-                    />
-                    <div className="relative flex items-start gap-3 w-full">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center mt-0.5" style={{ background: 'rgba(74,107,124,0.14)' }}>
-                        <SparkleIcon />
-                      </div>
-                      <span className="flex-1 leading-snug">{prompt}</span>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
+            <EmptyState onPromptClick={handleStarterClick} />
           ) : (
             <>
               {messages.map((message, index) => {
@@ -539,6 +518,81 @@ export const ChatUI = memo(function ChatUI({
         {showJumpToLatest && <JumpToLatest onClick={scrollToBottom} />}
       </AnimatePresence>
 
+      {/* Mid-stream error banner — shows when either useChat's error fires
+          OR our offline event listener catches a mid-stream disconnect */}
+      <AnimatePresence>
+        {(chatError || localError) && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="mx-4 mb-2"
+          >
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+              style={{
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.18)',
+              }}
+            >
+              {/* Error icon */}
+              <div
+                className="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl"
+                style={{ background: 'rgba(239,68,68,0.12)' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                </svg>
+              </div>
+
+              {/* Message — show localError (mid-stream disconnect) or chatError (API/network error) */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold" style={{ color: '#f87171' }}>
+                  {localError ? 'Connection lost mid-stream' : 'Connection interrupted'}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {(localError || String(chatError ?? '')).length > 80
+                    ? (localError || String(chatError ?? '')).slice(0, 80) + '...'
+                    : (localError || 'Your message could not be sent. Check your network and try again.')}
+                </p>
+              </div>
+
+              {/* Retry button */}
+              <button
+                onClick={handleStreamRetry}
+                disabled={isRetrying}
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                style={{
+                  background: 'rgba(239,68,68,0.12)',
+                  border: '1px solid rgba(239,68,68,0.22)',
+                  color: '#f87171',
+                }}
+              >
+                {isRetrying ? (
+                  <>
+                    <RetrySpinner />
+                    Retrying...
+                  </>
+                ) : (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M8 16H3v5" />
+                    </svg>
+                    Retry
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <ChatInput
         input={input}
         setInput={setInput}
@@ -550,22 +604,15 @@ export const ChatUI = memo(function ChatUI({
   );
 });
 
-function BotIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a10 10 0 1 0 10 10" />
-      <path d="M12 12 12 6" />
-      <path d="M12 12 16 14" />
-      <circle cx="18" cy="6" r="3" />
-      <path d="M18 3v6" />
-    </svg>
-  );
-}
+// ── Retry Spinner ─────────────────────────────────────────────────────────────────
 
-function SparkleIcon() {
+function RetrySpinner() {
   return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4A6B7C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    </svg>
+    <motion.div
+      className="w-3.5 h-3.5 rounded-full"
+      style={{ border: '2px solid rgba(248,113,113,0.25)', borderTopColor: '#f87171' }}
+      animate={{ rotate: 360 }}
+      transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+    />
   );
 }

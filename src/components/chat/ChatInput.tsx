@@ -49,6 +49,47 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
     textareaRef.current?.focus();
   }, []);
 
+  // ── iOS Safari Virtual Keyboard Handling ────────────────────────────────────
+  // visualViewport API (iOS Safari 16+) memberikan tinggi viewport actual
+  // saat keyboard terbuka. Fallback: scrollIntoView untuk browser lain.
+  useEffect(() => {
+    const vp = window.visualViewport;
+    if (!vp) return;
+
+    let rafId: number | null = null;
+
+    const handleViewportChange = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (!vp) return;
+        const keyboardHeight = window.innerHeight - vp.height - (vp.offsetTop || 0);
+        if (keyboardHeight > 0) {
+          document.documentElement.style.setProperty('--kb-offset', `${keyboardHeight}px`);
+        } else {
+          document.documentElement.style.setProperty('--kb-offset', '0px');
+        }
+      });
+    };
+
+    vp.addEventListener('resize', handleViewportChange);
+    vp.addEventListener('scroll', handleViewportChange);
+
+    return () => {
+      vp.removeEventListener('resize', handleViewportChange);
+      vp.removeEventListener('scroll', handleViewportChange);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  // Fallback scrollIntoView saat focus tanpa visualViewport
+  const handleFocus = () => {
+    if (!window.visualViewport && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 350);
+    }
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -90,6 +131,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
           w-full
           px-3 pb-3 pt-2
           safe-area-inset-bottom
+          chat-input-offset
         "
       >
         {/* Floating glass container */}
@@ -117,6 +159,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
                 placeholder="Ketik pesan..."
                 disabled={isLoading}
                 rows={1}

@@ -79,6 +79,22 @@
   min-height: -webkit-fill-available;
 }
 
+/* iOS Safari 100vh fix — applied to main chat layout containers */
+.chat-layout {
+  /* 1. Dynamic viewport height — real estate minus keyboard (modern browsers) */
+  height: 100dvh;
+  /* 2. Fallback: standard viewport height (most browsers) */
+  height: 100vh;
+  /* 3. iOS Safari legacy: fill available vertical space */
+  min-height: -webkit-fill-available;
+}
+
+/* Keyboard offset — set via CSS custom property from visualViewport handler */
+.chat-input-offset {
+  transform: translateY(calc(-1 * var(--kb-offset, 0px)));
+  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
 /* ============================================================
    SCROLLBAR STYLING
    ============================================================ */
@@ -343,6 +359,9 @@
 .scroll-container {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  contain: layout style;
+  /* Cegah rubber-band iOS berkonflik dengan auto-scroll percakapan */
+  overscroll-behavior: contain;
 }
 
 .message-enter {

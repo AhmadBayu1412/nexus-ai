@@ -91,6 +91,13 @@ export interface AutoScrollState {
 }
 
 /**
+ * Empty state component props
+ */
+export interface EmptyStateProps {
+  onPromptClick: (prompt: string) => void;
+}
+
+/**
  * Streaming state machine
  */
 export type StreamingState = 'idle' | 'loading' | 'streaming' | 'error';
