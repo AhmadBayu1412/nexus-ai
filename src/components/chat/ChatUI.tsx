@@ -60,6 +60,12 @@ export const ChatUI = memo(function ChatUI({
   const lastInputRef = useRef<string>('');
   const hasNotifiedChatCreated = useRef(false);
   const thinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks whether the current stream finished normally (onFinish called).
+  // Used to detect silent aborts: stream stopped but onFinish never fired.
+  const streamFinishedNormallyRef = useRef(false);
+  // Tracks whether the user explicitly clicked the Stop button.
+  // Suppresses false-positive error banner when user stops generation.
+  const userInitiatedStopRef = useRef(false);
 
   // Stable ref for onChatCreated — avoids recreating customFetch on every render
   const onChatCreatedRef = useRef(onChatCreated);
@@ -95,24 +101,6 @@ export const ChatUI = memo(function ChatUI({
         // The 401 response from the server will surface the auth error via chatError
       }
 
-      // Wrap with a short timeout signal so offline connections fail fast (~10s)
-      // instead of hanging indefinitely. Chains with useChat's own abort signal
-      // so user-initiated stops still work normally.
-      const parentSignal = init?.signal;
-      let combinedSignal: AbortSignal;
-      if (parentSignal) {
-        const timeoutSignal = AbortSignal.timeout(10_000);
-        // AbortSignal.any is available in modern browsers (Chrome 116+, FF 129+, Safari 17.4+)
-        if (typeof AbortSignal.any === 'function') {
-          combinedSignal = AbortSignal.any([parentSignal, timeoutSignal]);
-        } else {
-          // Fallback for older browsers: parent signal takes precedence
-          combinedSignal = parentSignal;
-        }
-      } else {
-        combinedSignal = AbortSignal.timeout(10_000);
-      }
-
       const response = await fetch(url, {
         method,
         headers: {
@@ -120,18 +108,7 @@ export const ChatUI = memo(function ChatUI({
           ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
         body,
-        signal: combinedSignal,
-      }).catch((fetchErr) => {
-        // If the fetch failed because our timeout/abort fired, surface it as a
-        // network error so onError fires and the error banner appears immediately.
-        if (fetchErr.name === 'AbortError' || fetchErr.name === 'TimeoutError') {
-          const netErr = new Error(
-            'Network error: Connection timed out or was aborted. Check your internet connection.'
-          );
-          (netErr as NodeJS.ErrnoException).cause = fetchErr;
-          throw netErr;
-        }
-        throw fetchErr;
+        signal: init?.signal,
       });
 
       return response;
@@ -181,6 +158,7 @@ export const ChatUI = memo(function ChatUI({
       }
     },
     onFinish: () => {
+      streamFinishedNormallyRef.current = true;
       dispatchThinking('hide');
       if (isPinned && containerRef.current) {
         containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -188,11 +166,9 @@ export const ChatUI = memo(function ChatUI({
     },
     onError: (err) => {
       dispatchThinking('hide');
-      // Error is already surfaced via chatError state → visible Error UI
-      // Only log in development for debugging purposes
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[ChatUI] Stream error:', err);
-      }
+      // Note: localError is NOT set here — the wasLoadingRef effect below handles
+      // silent abort detection by checking streamFinishedNormallyRef.
+      // Only set localError for auth errors where we want an immediate banner.
       let message = err.message || 'An error occurred';
       try {
         const parsed = JSON.parse(message);
@@ -205,10 +181,9 @@ export const ChatUI = memo(function ChatUI({
         message.includes('UNAUTHORIZED') ||
         message.includes('Firebase')
       ) {
-        message = 'Authentication required. Please sign in again.';
+        setLocalError('Authentication required. Please sign in again.');
+        setTimeout(() => setLocalError(null), 5000);
       }
-      setLocalError(message);
-      setTimeout(() => setLocalError(null), 5000);
     },
   });
 
@@ -309,17 +284,17 @@ export const ChatUI = memo(function ChatUI({
   }, []);
 
   // ─── Online/Offline listener ─────────────────────────────────────────────────
-  // Note: We do NOT guard on isLoading. When wifi drops mid-stream, the stream ends
-  // (isLoading → false) BEFORE the offline event fires, so the guard would always miss.
-  // Instead: offline ALWAYS sets localError; online clears it.
+  // Handles the case where wifi is cut BEFORE starting a new request.
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      setLocalError(null); // Clear any stale offline error when reconnecting
+      setLocalError(null);
     };
     const handleOffline = () => {
       setIsOnline(false);
-      setLocalError('Connection lost. Check your internet connection and try again.');
+      if (!isLoading) {
+        setLocalError('Connection lost. Check your internet connection and try again.');
+      }
     };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -327,7 +302,36 @@ export const ChatUI = memo(function ChatUI({
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [isLoading]);
+
+  // ─── Silent abort detection ───────────────────────────────────────────────────
+  // Detects when the stream stopped but onFinish never fired — a silent abort.
+  // This catches mid-stream disconnects that the browser's offline event misses.
+  // AbortErrors from user-initiated stops are excluded via userInitiatedStopRef.
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    if (isLoading) {
+      wasLoadingRef.current = true;
+      streamFinishedNormallyRef.current = false;
+    } else if (wasLoadingRef.current) {
+      wasLoadingRef.current = false;
+      if (!streamFinishedNormallyRef.current && !chatError && !userInitiatedStopRef.current) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally reactive:
+        // signals a silent abort to the UI by setting localError.
+        setLocalError('Connection lost. Check your internet connection and try again.');
+      }
+    }
+  }, [isLoading, chatError]);
+
+  // ─── User-initiated stop guard ───────────────────────────────────────────────
+  // Wrapping useChat's stop so we can suppress false-positive banners on user stops.
+  const handleStop = useCallback(() => {
+    userInitiatedStopRef.current = true;
+    stop();
+    setTimeout(() => {
+      userInitiatedStopRef.current = false;
+    }, 2000);
+  }, [stop]);
 
   // ─── Feedback ────────────────────────────────────────────────────────────────
   const handleFeedback = useCallback(
@@ -365,7 +369,7 @@ export const ChatUI = memo(function ChatUI({
   const handleRegenerate = useCallback(() => {
     if (!lastInputRef.current) return;
     toast({ message: '🔄 Regenerating...', type: 'info', duration: 2000 });
-    stop();
+    handleStop();
     setMessages((prev) => {
       if (prev.length === 0) return prev;
       return prev.slice(0, -1);
@@ -379,7 +383,7 @@ export const ChatUI = memo(function ChatUI({
       }, 30);
     }, 50);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable context ref
-  }, [stop, setMessages, setInput]);
+  }, [handleStop, setMessages, setInput]);
 
   // ─── Retry Tool ─────────────────────────────────────────────────────────────
   /** Called by ToolError when user clicks "Try Again". */
@@ -521,7 +525,7 @@ export const ChatUI = memo(function ChatUI({
       {/* Mid-stream error banner — shows when either useChat's error fires
           OR our offline event listener catches a mid-stream disconnect */}
       <AnimatePresence>
-        {(chatError || localError) && !isLoading && (
+        {(chatError || localError) && (
           <motion.div
             initial={{ opacity: 0, y: 8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -598,7 +602,7 @@ export const ChatUI = memo(function ChatUI({
         setInput={setInput}
         onSubmit={handleFormSubmit}
         isLoading={isLoading}
-        onStop={stop}
+        onStop={handleStop}
       />
     </div>
   );
