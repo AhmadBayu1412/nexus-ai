@@ -111,7 +111,57 @@ export const ChatUI = memo(function ChatUI({
         signal: init?.signal,
       });
 
-      return response;
+      if (!response.body) return response;
+
+      // Idle timeout: if no chunk arrives for this long, the connection is dead.
+      const IDLE_TIMEOUT_MS = 15_000;
+      let idleTimer: ReturnType<typeof setTimeout>;
+      const idleController = new AbortController();
+
+      const resetIdleTimer = () => {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          console.log('[customFetch] Idle timeout — no data for', IDLE_TIMEOUT_MS, 'ms');
+          setLocalError('Connection lost. Check your internet connection and try again.');
+          idleController.abort();
+        }, IDLE_TIMEOUT_MS);
+      };
+      resetIdleTimer();
+
+      const reader = response.body!.getReader();
+      const monitoredStream = new ReadableStream({
+        async start(controller) {
+          try {
+            while (true) {
+              if (idleController.signal.aborted) {
+                controller.error(new DOMException('Idle timeout', 'AbortError'));
+                return;
+              }
+              const { done, value } = await reader.read();
+              if (done) {
+                clearTimeout(idleTimer);
+                controller.close();
+                return;
+              }
+              resetIdleTimer(); // healthy chunk — keep the stream alive
+              controller.enqueue(value);
+            }
+          } catch (err) {
+            clearTimeout(idleTimer);
+            controller.error(err);
+          }
+        },
+        cancel() {
+          clearTimeout(idleTimer);
+          reader.cancel();
+        },
+      });
+
+      return new Response(monitoredStream, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
     },
     [chatId]
   );
