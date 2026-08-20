@@ -93,7 +93,7 @@ export const ChatUI = memo(function ChatUI({
       let idToken = '';
       try {
         const auth = getFirebaseAuth();
-        const firebaseUser = auth.currentUser;
+        const firebaseUser = auth?.currentUser;
         if (firebaseUser) {
           idToken = await firebaseUser.getIdToken(true);
         }
@@ -411,7 +411,7 @@ export const ChatUI = memo(function ChatUI({
       });
       try {
         const auth = getFirebaseAuth();
-        const firebaseUser = auth.currentUser;
+        const firebaseUser = auth?.currentUser;
         if (!firebaseUser) return;
         const token = await firebaseUser.getIdToken();
         const res = await fetch('/api/messages/feedback', {

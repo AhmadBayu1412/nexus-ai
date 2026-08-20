@@ -16,7 +16,7 @@ test.describe('Primary Chat Flow E2E', () => {
     });
 
     // 1. Navigate to chat page
-    await page.goto('/chat');
+    await page.goto('/chat/new');
 
     // 2. Input message via accessible role
     const chatInput = page.getByRole('textbox', { name: /chat input/i });
