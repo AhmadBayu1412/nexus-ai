@@ -32,6 +32,15 @@ A production-grade, streaming AI chat interface built with Next.js 16, featuring
 - **Security** — IDOR protection, rate limiting, NextAuth session + Firebase auth
 - **Responsive Design** — Works on desktop and mobile
 
+## 🚀 Recent UX & Performance Updates
+
+- **State Machine UI Choreography**: Upgraded `SmartButton` architecture with explicit 5-state lifecycle (Idle, Hover, Loading, Success, Error) featuring smooth, GPU-accelerated framer-motion choreography (shake, slide, color transitions).
+- **Spam Protection**: Added a 3-second cooldown to the "New Chat" button to prevent double-clicks and server spamming.
+- **Lazy Chat Creation (Virtual Chats)**: Re-architected chat lifecycle. New chats now start in a "virtual" state and are only saved to the database when the first message is sent, eliminating empty chat clutter in the sidebar.
+- **Optimistic UI Deletion**: Chat deletion now happens instantly in the UI with a single click (no layout shift, no page refresh), backed by background API synchronization and toast notifications.
+- **Seamless Chat Promotion (Bug Fix)**: Resolved a critical issue where the Next.js App Router would unmount the active page when promoting a virtual chat (`/chat/new`) to a real chat (`/chat/cm...`). Fixed by implementing silent URL updates (`window.history.replaceState`) alongside `useChatIdRef` tracking to keep the Vercel AI SDK stream uninterrupted.
+- **Agentic Timeout Tolerance (Bug Fix)**: Increased the `useChat` custom fetch idle timeout from 15s to 60s to correctly handle the longer time-to-first-byte (TTFB) associated with agentic LLM tasks (e.g., Tavily web research).
+
 ## Tech Stack
 
 | Category | Technology |

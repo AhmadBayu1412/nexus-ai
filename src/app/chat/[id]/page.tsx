@@ -41,6 +41,10 @@ export default function ChatPage() {
 
   // Generate stable chat ID for new chats
   const [newChatId] = useState(() => `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  
+  // Track if a virtual new chat has been promoted to a real chat in the database.
+  // This allows us to update the URL and sidebar without unmounting the active AI stream.
+  const [promotedChatId, setPromotedChatId] = useState<string | null>(null);
 
   // Fetch chats list
   const fetchChats = useCallback(async () => {
@@ -117,49 +121,38 @@ export default function ChatPage() {
     fetchChat();
   }, [authReady, user, fetchChats, fetchChat]);
 
-  const handleDeleteChat = useCallback(async (chatId: string) => {
-    const { getIdToken, router } = authRef.current;
-    try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/chats/${chatId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setChats((prev) => prev.filter((c) => c.id !== chatId));
-        if (chatId === id) {
-          router.push('/chat');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to delete chat:', error);
-    }
-  }, [id]);
-
-  const handleNewChat = useCallback(async () => {
-    const { getIdToken, router } = authRef.current;
-    try {
-      const token = await getIdToken();
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        router.push(`/chat/${data.chat.id}`);
-      }
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-    }
+  const handleDeleteChat = useCallback((chatId: string) => {
+    // ChatSidebar already handles the actual API deletion and routing.
+    // We only need to optimistically update the local list here.
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
   }, []);
+
+  const isActuallyNew = id === 'new' && !promotedChatId;
+
+  const handleNewChat = useCallback(() => {
+    // If already on a virtual new chat (no messages yet), do nothing — the
+    // current tab IS already an empty chat. Caller (ChatSidebar SmartButton)
+    // receives a thrown error to trigger its error/shake state.
+    if (isActuallyNew) {
+      throw new Error('already-on-empty-chat');
+    }
+    // If on a real chat that has no messages yet (unlikely but guard anyway)
+    if (currentChat && currentChat.messages.length === 0) {
+      throw new Error('already-on-empty-chat');
+    }
+    
+    // Navigate to virtual new chat.
+    // If we are currently on a silently promoted chat (URL updated via replaceState but Next.js
+    // router internal state still thinks it's on /chat/new), router.push won't work.
+    // We force a hard navigation to guarantee a fresh chat.
+    if (id === 'new' && promotedChatId) {
+      window.location.href = '/chat/new';
+      return;
+    }
+    
+    const { router } = authRef.current;
+    router.push('/chat/new');
+  }, [id, currentChat, isActuallyNew, promotedChatId]);
 
   if (loading || isLoadingChat) {
     return (
@@ -173,24 +166,32 @@ export default function ChatPage() {
     );
   }
 
-  const effectiveChatId = id === 'new' ? newChatId : id;
-  const isNewChat = id === 'new';
+  const effectiveChatId = promotedChatId || (id === 'new' ? newChatId : id);
+  const isVirtualEmptyChat = id === 'new' && !promotedChatId;
 
   return (
     <div className="flex chat-layout overflow-hidden">
       <ChatSidebar
         chats={chats}
+        activeChatId={effectiveChatId}
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
       />
       <main className="flex-1 flex flex-col min-w-0">
         <ChatUI
           chatId={effectiveChatId}
-          initialMessages={isNewChat ? [] : (currentChat?.messages || [])}
-          initialTitle={isNewChat ? 'New Chat' : (currentChat?.title || 'Chat')}
-          onChatCreated={(newChatId) => {
-            const { router } = authRef.current;
-            router.replace(`/chat/${newChatId}`);
+          initialMessages={isVirtualEmptyChat ? [] : (currentChat?.messages || [])}
+          initialTitle={isVirtualEmptyChat ? 'New Chat' : (currentChat?.title || 'Chat')}
+          onChatCreated={(newChatIdFromServer) => {
+            // Silently update the URL without triggering a Next.js navigation.
+            // This prevents the page component from unmounting and destroying the active AI stream.
+            window.history.replaceState(null, '', `/chat/${newChatIdFromServer}`);
+            
+            // Track the real ID so effectiveChatId stays accurate and the sidebar highlights it.
+            setPromotedChatId(newChatIdFromServer);
+            
+            // Refresh sidebar so the new chat appears in history
+            fetchChats();
           }}
         />
       </main>

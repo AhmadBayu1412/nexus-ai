@@ -54,44 +54,17 @@ export default function ChatListPage() {
     }
   }, [user, loading, router]);
 
-  const handleNewChat = useCallback(async () => {
-    try {
-      const token = await getIdToken();
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({}),
-      });
+  const handleNewChat = useCallback(() => {
+    // Navigate to the virtual 'new' route — chat is only created in DB
+    // when the first message is sent (lazy creation via ChatUI + X-Chat-Id header).
+    router.push('/chat/new');
+  }, [router]);
 
-      if (response.ok) {
-        const data = await response.json();
-        router.push(`/chat/${data.chat.id}`);
-      }
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-    }
-  }, [getIdToken, router]);
-
-  const handleDeleteChat = useCallback(async (chatId: string) => {
-    try {
-      const token = await getIdToken();
-      const response = await fetch(`/api/chats/${chatId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setChats((prev) => prev.filter((c) => c.id !== chatId));
-      }
-    } catch (error) {
-      console.error('Failed to delete chat:', error);
-    }
-  }, [getIdToken]);
+  const handleDeleteChat = useCallback((chatId: string) => {
+    // ChatSidebar already handles the actual API deletion and routing.
+    // We only need to optimistically update the local list here.
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
+  }, []);
 
   if (loading || isLoadingChats) {
     return (

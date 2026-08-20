@@ -13,7 +13,7 @@
  */
 
 import { useRef, useEffect, useState, KeyboardEvent, FormEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowUp, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +32,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [submitting, setSubmitting] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -188,22 +189,27 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
                       ? 'text-white shadow-lg'
                       : 'text-white/30 cursor-not-allowed'
                 )}
-                style={
-                  {
-                    pointerEvents: 'auto',
-                    ...(canSubmit && !isLoading
+                style={{
+                  pointerEvents: 'auto',
+                  cursor: (!canSubmit && !isLoading && !submitting) ? 'not-allowed' : 'pointer',
+                  ...(canSubmit && !isLoading
+                    ? {
+                        background: 'linear-gradient(135deg, #4A6B7C 0%, #3d5a69 100%)',
+                      }
+                    : isLoading
                       ? {
-                          background: 'linear-gradient(135deg, #4A6B7C 0%, #3d5a69 100%)',
+                          background: '#4A6B7C',
                         }
-                      : isLoading
-                        ? {
-                            background: '#4A6B7C',
-                          }
-                        : {}),
-                  }
-                }
+                      : {}),
+                }}
                 aria-label={isLoading ? 'Stop generation' : 'Send message'}
+                whileHover={
+                  shouldReduceMotion || (!canSubmit && !isLoading)
+                    ? {}
+                    : { scale: 1.06, filter: 'brightness(1.10)' }
+                }
                 whileTap={isLoading || canSubmit ? { scale: 0.92 } : {}}
+                transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {isLoading ? (

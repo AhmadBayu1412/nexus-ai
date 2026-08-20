@@ -16,6 +16,7 @@ import { EmptyState } from './EmptyState';
 import { JumpToLatest } from './JumpToLatest';
 import { ChatInput } from './ChatInput';
 import { ThinkingIndicator } from './ThinkingIndicator';
+import { SmartButton } from '@/components/ui/SmartButton';
 import { getFirebaseAuth } from '@/lib/auth/firebase';
 import { useToast } from '@/components/ui/Toast';
 import type { ChatMessage as ChatMessageType, MessageFeedback } from '@/types/chat';
@@ -114,7 +115,8 @@ export const ChatUI = memo(function ChatUI({
       if (!response.body) return response;
 
       // Idle timeout: if no chunk arrives for this long, the connection is dead.
-      const IDLE_TIMEOUT_MS = 15_000;
+      // Increased to 60s because agentic tasks with tools (e.g. Tavily search) can take time.
+      const IDLE_TIMEOUT_MS = 60_000;
       let idleTimer: ReturnType<typeof setTimeout>;
       const idleController = new AbortController();
 
@@ -166,6 +168,21 @@ export const ChatUI = memo(function ChatUI({
     [chatId]
   );
 
+  // ── State for tracking chat promotion without resetting useChat ─────────────
+  const useChatIdRef = useRef(chatId);
+  const realChatIdRef = useRef<string | null>(null);
+
+  if (chatId !== useChatIdRef.current) {
+    if (chatId === realChatIdRef.current) {
+      // Promotion from virtual 'new-' chat to real server chat.
+      // Do NOT update useChatIdRef, so useChat doesn't clear mid-stream.
+    } else {
+      // Normal navigation to a different chat.
+      useChatIdRef.current = chatId;
+      realChatIdRef.current = null;
+    }
+  }
+
   const {
     messages,
     input,
@@ -178,7 +195,7 @@ export const ChatUI = memo(function ChatUI({
     append,
     setMessages,
   } = useChat({
-    id: chatId,
+    id: useChatIdRef.current,
     api: '/api/chat',
     fetch: customFetch,
     initialMessages: initialMessages
@@ -203,6 +220,7 @@ export const ChatUI = memo(function ChatUI({
         const newChatId = response.headers.get('X-Chat-Id');
         if (newChatId && !newChatId.startsWith('new-')) {
           hasNotifiedChatCreated.current = true;
+          realChatIdRef.current = newChatId; // Mark as promoted to prevent useChat reset
           onChatCreatedRef.current(newChatId);
         }
       }
@@ -614,34 +632,32 @@ export const ChatUI = memo(function ChatUI({
                 </p>
               </div>
 
-              {/* Retry button */}
-              <button
-                onClick={handleStreamRetry}
-                disabled={isRetrying}
-                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              {/* Retry button — SmartButton FSM handles loading/success/error states */}
+              <SmartButton
+                onClick={async () => {
+                  if (isRetrying) throw new Error('already retrying');
+                  setIsRetrying(true);
+                  setLocalError(null);
+                  try {
+                    await reload();
+                  } finally {
+                    setTimeout(() => setIsRetrying(false), 2000);
+                  }
+                }}
+                idleLabel="Retry"
+                loadingLabel="Retrying..."
+                successLabel="Sent!"
+                errorLabel="Failed"
+                showIcon={false}
+                successResetMs={1200}
+                errorResetMs={1800}
+                className="shrink-0 px-4 py-2 text-sm"
                 style={{
                   background: 'rgba(239,68,68,0.12)',
                   border: '1px solid rgba(239,68,68,0.22)',
                   color: '#f87171',
                 }}
-              >
-                {isRetrying ? (
-                  <>
-                    <RetrySpinner />
-                    Retrying...
-                  </>
-                ) : (
-                  <>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                      <path d="M21 3v5h-5" />
-                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                      <path d="M8 16H3v5" />
-                    </svg>
-                    Retry
-                  </>
-                )}
-              </button>
+              />
             </div>
           </motion.div>
         )}
