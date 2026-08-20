@@ -34,6 +34,7 @@ A production-grade, streaming AI chat interface built with Next.js 16, featuring
 
 ## 🚀 Recent UX & Performance Updates
 
+- **Automated Testing Safety Net (FE-09)**: Established complete test suite using Vitest + React Testing Library (6 component tests) and Playwright (E2E with network interception), enforced by a GitHub Actions CI pipeline.
 - **State Machine UI Choreography**: Upgraded `SmartButton` architecture with explicit 5-state lifecycle (Idle, Hover, Loading, Success, Error) featuring smooth, GPU-accelerated framer-motion choreography (shake, slide, color transitions).
 - **Spam Protection**: Added a 3-second cooldown to the "New Chat" button to prevent double-clicks and server spamming.
 - **Lazy Chat Creation (Virtual Chats)**: Re-architected chat lifecycle. New chats now start in a "virtual" state and are only saved to the database when the first message is sent, eliminating empty chat clutter in the sidebar.
@@ -55,6 +56,8 @@ A production-grade, streaming AI chat interface built with Next.js 16, featuring
 | External Search | Tavily API (Google Search for lead research) |
 | Styling | Tailwind CSS v4 |
 | UI Components | CVA, Lucide React, Framer Motion |
+| Testing | Vitest, React Testing Library, Playwright |
+| CI/CD | GitHub Actions |
 | Deployment | Vercel |
 
 ## Getting Started
@@ -132,6 +135,8 @@ npm run dev          # Start dev server with Turbopack
 npm run build        # Production build
 npm run start        # Start production server
 npm run lint          # Run ESLint
+npm run test         # Run Vitest unit & component tests (100% pass)
+npm run test:e2e     # Run Playwright E2E tests
 npm run db:generate   # Generate Prisma client
 npm run db:push      # Push schema to database
 npm run db:studio    # Open Prisma Studio
@@ -189,6 +194,16 @@ npm run db:studio    # Open Prisma Studio
 │       └── chat.ts
 ├── docs/
 │   └── screenshots/              # App screenshots
+├── src/
+│   └── __tests__/                # Vitest component test suite
+├── tests/
+│   └── primary-flow.spec.ts      # Playwright E2E test suite
+├── .github/
+│   └── workflows/
+│       └── test.yml              # GitHub Actions CI workflow
+├── vitest.config.ts
+├── vitest.setup.ts
+├── playwright.config.ts
 ├── next.config.ts
 ├── eslint.config.mjs
 ├── postcss.config.mjs
@@ -214,6 +229,7 @@ Detailed documentation is available in the `docs/` directory:
 - [Layer 4: State Management](docs/layers/layer-04-state-management.md)
 - [Layer 6: Database Architecture](docs/layers/layer-06-database-architecture.md)
 - [Layer 10: Testing Strategy](docs/layers/layer-10-testing-strategy.md)
+- [Testing Requirements (ADR)](docs/TESTING_REQUIREMENTS.md) — Architecture Decision Record & Automated Testing Requirements
 - [Layer 11: Observability](docs/layers/layer-11-observability.md)
 
 ## Keyboard Shortcuts
@@ -394,3 +410,33 @@ This rationale details the UX and animation principles behind the `SmartButton` 
 - **Reduced Motion:** Integrated with Framer Motion's `useReducedMotion()`. When the user prefers reduced motion, positional translations and the shake animation are zeroed out, retaining only pure opacity fades and color context.
 - **Spam/Interrupt Resilience:** Button automatically disables click triggers when in `loading` state to prevent duplicate request dispatching (such as the 3-second cooldown on the "New Chat" button).
 - **Screen Reader Support:** Configured with `aria-live="polite"` and `aria-busy` to inform assistive devices of background operations without disrupting screen reader flow.
+
+---
+
+## 🧪 Automated Testing & Quality Assurance (FE-09) — Feature Deep Dive
+
+A production-grade automated testing safety net enforcing strict Architecture Decision Records (ADR) and ironclad rules for AI-assisted development.
+
+### Test Results
+
+| Test Type | Framework / Runner | Test Files | Status |
+|---|---|---|---|
+| **Component & Unit Tests** | Vitest + React Testing Library | 3 files (6 tests) | **100% Pass** (6/6) |
+| **End-to-End (E2E) Tests** | Playwright | 1 file (Primary Chat Flow) | **Configured & Isolated** |
+| **Continuous Integration** | GitHub Actions | `.github/workflows/test.yml` | **Active** |
+
+### Mandatory Scenarios Covered
+
+1. **Pending State Test (`ThinkingIndicator`):** Verifies the "AI is thinking..." indicator renders when waiting for the first token.
+2. **Streaming State Test (`ChatMessage`):** Verifies progressive text streaming and Markdown rendering (`p`, `strong`, `code`).
+3. **Error State Test (`ToolError`):** Verifies visual error display and functional retry button (`getByRole('button', { name: /try again/i })`).
+4. **Markdown & Part Types Test (`ChatMessage`):** Verifies syntax-highlighted code blocks render cleanly in the DOM.
+5. **Form Validation Test (`ChatInput`):** Verifies submit button is disabled on empty input and handler is called with valid user text.
+6. **Tool Call Render Test (`LeadScoreCard`):** Verifies structured JSON tool outputs (score, verdict badge, analysis bullets) correctly map to UI elements.
+7. **Primary Flow E2E (`primary-flow.spec.ts`):** Walks through full chat interaction with network route interception (`page.route('/api/chat', ...)`).
+
+### Ironclad Rules Enforced
+
+- 🔒 **Zero Real AI API Calls:** All LLM streams and network endpoints are intercepted and mocked.
+- ♿ **Accessibility-First Selectors Only:** Strict prohibition of `data-testid` or CSS class selectors (`.chat-bubble`). All queries use accessible ARIA roles (`getByRole`, `getByText`, `getByLabelText`).
+- 🛡️ **CI Enforcement:** GitHub Actions blocks pull requests if any component or E2E test fails.
