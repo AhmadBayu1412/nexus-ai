@@ -2,7 +2,7 @@
 
 A production-grade, streaming AI chat interface built with Next.js 16, featuring real-time token streaming, chat history persistence, multi-provider AI support, and Firebase + NextAuth authentication.
 
-[**Live Demo**]([https://nexus-ai-chatbot-opal.vercel.app/](https://nexus-ai-chat-five.vercel.app/chat)) &nbsp;·&nbsp; [**GitHub**](https://github.com/AhmadBayu1412/nexus-ai)
+[**Live Demo**](https://nexus-ai-chat-five.vercel.app/chat) &nbsp;·&nbsp; [**GitHub**](https://github.com/AhmadBayu1412/nexus-ai)
 
 ![Nexus AI — Chat Streaming](docs/screenshots/chat-streaming.png)
 ![Nexus AI — Chat List](docs/screenshots/chat-list.png)
@@ -373,3 +373,24 @@ npm run dev
 #    - Analysis bullets
 #    - AI-generated natural language summary
 ```
+
+---
+
+## SmartButton Motion & State Rationale — Feature Deep Dive
+
+This rationale details the UX and animation principles behind the `SmartButton` component, which manages our 5-state lifecycle (Idle, Hover, Loading, Success, Error).
+
+### 1. State Machine & Choreography
+- **Lifecycle:** `idle` → `hover` → `loading` (during async fetch) → `success` (brief checkmark morph) / `error` (horizontal shake + retry prompt) → graceful reset back to `idle`.
+- **Transitions over Swaps:** Content parts (icon + label) exit via `y: -10px, opacity: 0` and enter via `y: 10px, opacity: 0` using Framer Motion's `mode="popLayout"`, creating a fluid mechanical turnover rather than an abrupt DOM flash.
+
+### 2. Duration & Easing Decisions
+- **Hover/Tap (150ms, easeOut):** Micro-interactions provide instant haptic-like visual feedback with zero perceptible latency.
+- **State Transition (200ms, easeInOut):** Fast enough to avoid delaying the user's perception of AI progress, but long enough for the human eye to track label changes.
+- **Error Shake (400ms):** Keyframed displacement `[-6px, 6px, -4px, 4px, 0]` cleanly mimics physical pushback on an invalid or failed operation.
+- **Compositor Only:** Animations strictly operate on `transform` and `opacity` to avoid layout re-calculations and maintain 60fps performance.
+
+### 3. Accessibility & Edge-Case Defenses
+- **Reduced Motion:** Integrated with Framer Motion's `useReducedMotion()`. When the user prefers reduced motion, positional translations and the shake animation are zeroed out, retaining only pure opacity fades and color context.
+- **Spam/Interrupt Resilience:** Button automatically disables click triggers when in `loading` state to prevent duplicate request dispatching (such as the 3-second cooldown on the "New Chat" button).
+- **Screen Reader Support:** Configured with `aria-live="polite"` and `aria-busy` to inform assistive devices of background operations without disrupting screen reader flow.
