@@ -97,7 +97,7 @@ export function LeadScoreCard({
             </div>
             {companyName && (
               <span className="text-xs px-2 py-0.5 rounded-md truncate max-w-[140px]"
-                style={{ background: 'rgba(255,253,248,0.06)', color: '#9E9B94' }}>
+                style={{ background: 'rgba(255,253,248,0.08)', color: 'rgba(255,255,255,0.80)' }}>
                 {companyName}
               </span>
             )}
@@ -124,14 +124,14 @@ export function LeadScoreCard({
             >
               {score}
             </motion.span>
-            <span className="text-lg font-medium pb-1" style={{ color: 'rgba(158,155,148,0.5)' }}>/100</span>
+            <span className="text-lg font-medium pb-1" style={{ color: 'rgba(255,255,255,0.65)' }}>/100</span>
           </div>
           <div className="flex-1 flex flex-col gap-1 pb-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium" style={{ color: scoreColor }}>{scoreLabel}</span>
-              <span className="text-xs" style={{ color: '#9E9B94' }}>Lead Score</span>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.75)' }}>Lead Score</span>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,253,248,0.08)' }}>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,253,248,0.12)' }}>
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: scoreColor }}
@@ -145,22 +145,24 @@ export function LeadScoreCard({
       </div>
 
       {/* Divider */}
-      <div className="mx-5" style={{ height: 1, background: 'rgba(44,42,38,0.14)' }} />
+      <div className="mx-5" style={{ height: 1, background: 'rgba(255,255,255,0.08)' }} />
 
       {/* Research Summary (collapsible) */}
       {hasResearch && researchSources && researchSources.length > 0 && (
         <div className="px-5 py-3">
           <button
             onClick={() => setShowResearch((v) => !v)}
-            className="w-full flex items-center gap-2 text-left"
+            className="w-full flex items-center gap-2 text-left focus-ring rounded-lg py-1"
+            aria-expanded={showResearch}
+            aria-label="Toggle Google research summary"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4A6B7C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <span className="text-xs font-semibold" style={{ color: '#4A6B7C' }}>Research dari Google</span>
-            <span className="ml-auto transition-transform duration-200" style={{ color: '#9E9B94', transform: showResearch ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <span className="text-xs font-semibold" style={{ color: '#88B0C4' }}>Research dari Google</span>
+            <span className="ml-auto transition-transform duration-200" style={{ color: 'rgba(255,255,255,0.75)', transform: showResearch ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </span>
@@ -183,12 +185,12 @@ export function LeadScoreCard({
                       rel="noopener noreferrer"
                       className="flex items-start gap-2 group"
                     >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9E9B94" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                        className="shrink-0 mt-0.5">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.70)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        className="shrink-0 mt-0.5" aria-hidden="true">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                       </svg>
-                      <span className="text-xs leading-snug group-hover:underline" style={{ color: '#9E9B94' }}>
+                      <span className="text-xs leading-snug group-hover:underline" style={{ color: 'rgba(255,255,255,0.80)' }}>
                         {source.title}
                       </span>
                     </a>

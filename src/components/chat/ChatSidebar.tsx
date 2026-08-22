@@ -56,11 +56,11 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
       )}
       style={{
-        color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.65)',
-        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+        color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.78)',
+        background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
         cursor: 'pointer',
         transition: 'background 150ms cubic-bezier(0.4,0,0.2,1), color 150ms cubic-bezier(0.4,0,0.2,1)',
       }}
@@ -68,11 +68,11 @@ function NavItem({ icon, label, active, badge, onClick }: NavItemProps) {
       whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
       transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
     >
-      <span style={{ opacity: active ? 1 : 0.75 }}>{icon}</span>
+      <span style={{ opacity: active ? 1 : 0.85 }}>{icon}</span>
       <span className="flex-1 text-left font-medium">{label}</span>
       {badge && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
-          style={{ background: 'rgba(92,122,94,0.85)', color: '#ffffff' }}>
+        <span className="text-xs px-2 py-0.5 rounded-md font-medium"
+          style={{ background: 'rgba(92,122,94,0.95)', color: '#ffffff' }}>
           {badge}
         </span>
       )}
@@ -96,7 +96,7 @@ function ComingSoonNavItem({ icon, label, badge, featureName }: ComingSoonNavIte
     if (isError) return;
     setIsError(true);
     toast({
-      message: `\u26a0\ufe0f ${featureName ?? label} belum tersedia. Segera hadir!`,
+      message: `⚠️ ${featureName ?? label} belum tersedia. Segera hadir!`,
       type: 'error',
       duration: 3000,
     });
@@ -108,10 +108,10 @@ function ComingSoonNavItem({ icon, label, badge, featureName }: ComingSoonNavIte
       onClick={handleClick}
       className={cn(
         'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
       )}
       style={{
-        color: isError ? '#fca5a5' : 'rgba(255,255,255,0.65)',
+        color: isError ? '#fca5a5' : 'rgba(255,255,255,0.78)',
         background: isError ? 'rgba(239,68,68,0.12)' : 'transparent',
         border: isError ? '1px solid rgba(239,68,68,0.25)' : '1px solid transparent',
         cursor: 'pointer',
@@ -122,12 +122,12 @@ function ComingSoonNavItem({ icon, label, badge, featureName }: ComingSoonNavIte
       whileTap={shouldReduceMotion || isError ? {} : { scale: 0.97 }}
       aria-label={`${label} — belum tersedia`}
     >
-      <span style={{ opacity: isError ? 1 : 0.75 }}>{icon}</span>
+      <span style={{ opacity: isError ? 1 : 0.85 }}>{icon}</span>
       <span className="flex-1 text-left font-medium">{label}</span>
       {badge && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
+        <span className="text-xs px-2 py-0.5 rounded-md font-medium"
           style={{
-            background: isError ? 'rgba(239,68,68,0.25)' : 'rgba(92,122,94,0.85)',
+            background: isError ? 'rgba(239,68,68,0.25)' : 'rgba(92,122,94,0.95)',
             color: isError ? '#fca5a5' : '#ffffff',
             transition: 'background 200ms ease, color 200ms ease',
           }}>
@@ -219,7 +219,7 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
           </div>
 
           {/* Nav — tanpa "Chat baru" duplikat */}
-          <nav className="space-y-0.5 mb-3">
+          <nav aria-label="Navigasi Menu Utama" className="space-y-0.5 mb-3">
             <NavItem
               icon={<MessageSquare className="w-4 h-4" />}
               label="Obrolan"
@@ -249,8 +249,6 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
               }
 
               // ── Delegate to page-level handler ────────────────────────────
-              // handleNewChat may throw 'already-on-empty-chat' if user is
-              // already in an empty chat (id === 'new' or 0 messages).
               try {
                 lastNewChatClickRef.current = now;
                 onNewChat?.();
@@ -264,7 +262,6 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
                     duration: 3000,
                   });
                 }
-                // Re-throw so SmartButton transitions to error/shake state
                 throw err;
               }
             }}
@@ -284,13 +281,13 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
         <div className="flex-1 overflow-y-auto p-2" style={{ scrollbarWidth: 'thin' }}>
           {chats.length === 0 ? (
             <div className="text-center py-10 px-4">
-              <MessageSquare className="w-8 h-8 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
-              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              <MessageSquare className="w-8 h-8 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.45)' }} />
+              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
                 Belum ada percakapan.<br />Mulai chat baru!
               </p>
             </div>
           ) : (
-            <nav className="space-y-0.5">
+            <nav aria-label="Daftar Riwayat Percakapan" className="space-y-0.5">
               {chats.map((chat) => {
                 const isActive = activeChatId ? chat.id === activeChatId : pathname === `/chat/${chat.id}`;
                 return (
@@ -300,34 +297,35 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
                       onClick={() => setIsOpen(false)}
                       className={cn(
                         'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                         isActive ? 'border-l-2' : 'hover:bg-white/[0.05]'
                       )}
                       style={isActive
-                        ? { background: 'rgba(74,107,124,0.18)', color: '#ffffff', borderLeftColor: '#4A6B7C', paddingLeft: '10px' }
-                        : { color: 'rgba(255,255,255,0.70)' }
+                        ? { background: 'rgba(74,107,124,0.22)', color: '#ffffff', borderLeftColor: '#4A6B7C', paddingLeft: '10px' }
+                        : { color: 'rgba(255,255,255,0.80)' }
                       }
                     >
-                      <MessageSquare className="w-4 h-4 flex-shrink-0 opacity-50" />
+                      <MessageSquare className="w-4 h-4 flex-shrink-0 opacity-70" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate leading-tight">{chat.title || 'Percakapan baru'}</p>
-                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.42)' }}>{formatDate(chat.updatedAt)}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.72)' }}>{formatDate(chat.updatedAt)}</p>
                       </div>
                     </Link>
-                    {/* Trash button — single click deletes immediately */}
-                    <motion.button
+                    {/* Trash button — accessible via hover AND keyboard focus */}
+                    <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteChat(chat.id); }}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg"
-                      style={{ cursor: 'pointer' }}
-                      aria-label="Hapus chat"
+                      className={cn(
+                        'absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg',
+                        'opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus:opacity-100',
+                        'transition-all duration-150',
+                        'hover:bg-red-500/20 hover:text-red-300 focus-visible:ring-2 focus-visible:ring-red-400'
+                      )}
+                      style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.75)' }}
+                      aria-label={`Hapus percakapan ${chat.title || 'baru'}`}
                       title="Hapus chat"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 0, scale: 0.9 }}
-                      whileHover={{ opacity: 1, scale: 1.08, color: '#f87171', backgroundColor: 'rgba(239,68,68,0.12)' }}
-                      whileTap={{ scale: 0.88 }}
-                      transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
                     >
-                      <Trash2 className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.55)' }} />
-                    </motion.button>
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
                   </div>
                 );
               })}
@@ -337,7 +335,7 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
 
         {/* Footer */}
         <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.70)' }}>
             Nexus AI adalah AI dan bisa keliru.
           </p>
         </div>

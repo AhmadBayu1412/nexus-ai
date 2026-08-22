@@ -165,7 +165,7 @@ export function ToolError({ message, onRetry, className, toolName }: ToolErrorPr
           <h3 className="text-base font-semibold" style={{ color: '#F2EFE6' }}>
             {config.title}
           </h3>
-          <p className="text-sm leading-relaxed max-w-[320px]" style={{ color: '#9E9B94' }}>
+          <p className="text-sm leading-relaxed max-w-[320px]" style={{ color: 'rgba(255,255,255,0.78)' }}>
             {config.description}
           </p>
         </div>

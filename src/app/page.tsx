@@ -45,14 +45,14 @@ export default function HomePage() {
 
   // Not authenticated - show sign-in page
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+    <main id="main-content" className="min-h-screen flex items-center justify-center bg-[var(--background)]">
       <div className="max-w-md w-full mx-4 text-center">
         <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--brand-primary)]/10 flex items-center justify-center">
-          <span className="text-4xl">🤖</span>
+          <span className="text-4xl" role="img" aria-label="Robot icon">🤖</span>
         </div>
         
         <h1 className="text-3xl font-bold mb-3 text-[var(--text-primary)]">
-          Welcome to My AI Chatbot
+          Welcome to Nexus AI
         </h1>
         
         <p className="text-[var(--text-secondary)] mb-8">
@@ -72,8 +72,9 @@ export default function HomePage() {
             focus-ring
             btn-press
           "
+          aria-label="Continue with GitHub login"
         >
-          <Github className="w-6 h-6" />
+          <Github className="w-6 h-6" aria-hidden="true" />
           <span>Continue with GitHub</span>
         </button>
 
@@ -81,6 +82,6 @@ export default function HomePage() {
           By signing in, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
-    </div>
+    </main>
   );
 }

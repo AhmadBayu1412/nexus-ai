@@ -83,7 +83,7 @@ export default function ChatListPage() {
         onDeleteChat={handleDeleteChat}
       />
       
-      <main className="flex-1 flex items-center justify-center min-w-0">
+      <main id="main-content" className="flex-1 flex items-center justify-center min-w-0">
         <div className="text-center max-w-md px-4">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--brand-primary)]/10 flex items-center justify-center">
             <MessageSquare className="w-8 h-8 text-[var(--brand-primary)]" />

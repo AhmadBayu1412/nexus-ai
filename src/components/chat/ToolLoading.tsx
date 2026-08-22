@@ -129,24 +129,24 @@ function StreamingSkeleton({ paramKeys }: { paramKeys: string[] }) {
   return (
     <div className="px-4 py-4 space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-xs shrink-0" style={{ color: '#9E9B94' }}>{'{'}</span>
+        <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.75)' }}>{'{'}</span>
         <SkeletonBar width="55%" delay={0} />
       </div>
       {paramKeys.map((key, i) => (
         <div key={key} className="flex items-center gap-2 pl-4">
-          <span className="text-xs shrink-0" style={{ color: '#9E9B94' }}>
+          <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.75)' }}>
             {'"'}{key}{'": '}
           </span>
           <SkeletonBar width={key === 'companySize' ? '35%' : '50%'} delay={(i + 1) * 0.1} />
           {i < paramKeys.length - 1 && (
-            <span className="text-xs" style={{ color: '#9E9B94' }}>,</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.75)' }}>,</span>
           )}
         </div>
       ))}
       <div className="flex items-center gap-2">
-        <span className="text-xs shrink-0" style={{ color: '#9E9B94' }}>{'}'}</span>
+        <span className="text-xs shrink-0" style={{ color: 'rgba(255,255,255,0.75)' }}>{'}'}</span>
       </div>
-      <p className="text-xs pt-1" style={{ color: 'rgba(158,155,148,0.6)' }}>
+      <p className="text-xs pt-1" style={{ color: 'rgba(255,255,255,0.70)' }}>
         AI sedang mengetik parameter...
       </p>
     </div>
@@ -157,7 +157,7 @@ function SkeletonBar({ width, delay }: { width: string; delay: number }) {
   return (
     <motion.div
       className="h-3 rounded-md"
-      style={{ background: 'rgba(74,107,124,0.12)', width }}
+      style={{ background: 'rgba(74,107,124,0.18)', width }}
       animate={{ opacity: [0.4, 0.9, 0.4] }}
       transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut', delay }}
     />
@@ -171,7 +171,7 @@ function ExecutingBody({ label, hint }: { label: string; hint: string }) {
       <div className="relative w-10 h-10">
         <div
           className="absolute inset-0 rounded-full"
-          style={{ border: '3px solid rgba(74,107,124,0.15)' }}
+          style={{ border: '3px solid rgba(74,107,124,0.20)' }}
         />
         <motion.div
           className="absolute inset-0 rounded-full"
@@ -184,7 +184,7 @@ function ExecutingBody({ label, hint }: { label: string; hint: string }) {
       {/* Labels */}
       <div className="text-center">
         <p className="text-sm font-medium" style={{ color: '#F2EFE6' }}>{label}</p>
-        <p className="text-xs mt-1" style={{ color: '#9E9B94' }}>{hint}</p>
+        <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>{hint}</p>
       </div>
 
       {/* Progress dots */}

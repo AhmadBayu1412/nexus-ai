@@ -50,7 +50,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none">
+      <div
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <AnimatePresence>
           {toasts.map((t) => {
             const Icon = icons[t.type];

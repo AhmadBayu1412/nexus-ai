@@ -177,7 +177,7 @@ export default function ChatPage() {
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
       />
-      <main className="flex-1 flex flex-col min-w-0">
+      <main id="main-content" className="flex-1 flex flex-col min-w-0">
         <ChatUI
           chatId={effectiveChatId}
           initialMessages={isVirtualEmptyChat ? [] : (currentChat?.messages || [])}

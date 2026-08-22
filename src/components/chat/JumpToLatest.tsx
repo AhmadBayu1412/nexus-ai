@@ -27,13 +27,14 @@ export function JumpToLatest({ onClick }: JumpToLatestProps) {
           damping: 25,
         }}
         whileTap={{ scale: 0.88 }}
-        className="fixed bottom-36 right-6 z-50 w-10 h-10 rounded-full flex items-center justify-center min-w-11 min-h-11 focus-ring cursor-pointer"
+        className="fixed bottom-36 right-6 z-50 w-11 h-11 rounded-full flex items-center justify-center min-w-11 min-h-11 focus-ring cursor-pointer"
         style={{
+          background: 'rgba(44, 42, 38, 0.94)',
           backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          border: '1px solid rgba(74, 107, 124, 0.40)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
         }}
-        aria-label="Jump to latest message"
+        aria-label="Gulir ke pesan terbaru"
       >
         <motion.div
           animate={{ y: [0, 3, 0] }}
@@ -43,7 +44,7 @@ export function JumpToLatest({ onClick }: JumpToLatestProps) {
             ease: 'easeInOut',
           }}
         >
-          <ArrowDown className="w-4 h-4" style={{ color: '#4A6B7C' }} />
+          <ArrowDown className="w-5 h-5 text-white" aria-hidden="true" />
         </motion.div>
       </motion.button>
     </AnimatePresence>

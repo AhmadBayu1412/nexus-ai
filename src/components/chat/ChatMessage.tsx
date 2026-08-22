@@ -346,24 +346,26 @@ function ReasoningBlock({ reasoning }: ReasoningBlockProps) {
     <div className="reasoning-block mb-3">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors focus-ring"
         style={{
           border: '1px solid rgba(74,107,124,0.18)',
           background: 'rgba(74,107,124,0.06)',
         }}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? "Sembunyikan proses berpikir AI" : "Tampilkan proses berpikir AI"}
       >
         <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#4A6B7C' }} />
         <span className="text-xs font-medium" style={{ color: '#4A6B7C' }}>Thinking</span>
-        <span className="text-xs ml-auto flex items-center gap-1" style={{ color: '#9E9B94' }}>
+        <span className="text-xs ml-auto flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
           {isOpen ? (
             <>
               <span>Hide</span>
-              <ChevronUp className="w-3 h-3" />
+              <ChevronUp className="w-3 h-3" aria-hidden="true" />
             </>
           ) : (
             <>
               <span>Show</span>
-              <ChevronDown className="w-3 h-3" />
+              <ChevronDown className="w-3 h-3" aria-hidden="true" />
             </>
           )}
         </span>
@@ -378,7 +380,7 @@ function ReasoningBlock({ reasoning }: ReasoningBlockProps) {
             className="overflow-hidden"
           >
             <div className="pt-2 px-3 pb-2">
-              <p className="text-xs font-mono leading-relaxed whitespace-pre-wrap" style={{ color: '#9E9B94' }}>
+              <p className="text-xs font-mono leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
                 {reasoning}
               </p>
             </div>
@@ -491,6 +493,9 @@ export function ChatMessage({
                 shadow-md
                 relative
               "
+              aria-live={isStreaming ? 'polite' : undefined}
+              aria-atomic={isStreaming ? 'false' : undefined}
+              aria-busy={isStreaming}
             >
               {/* Reasoning block (if available) */}
               {message.reasoning && <ReasoningBlock reasoning={message.reasoning} />}

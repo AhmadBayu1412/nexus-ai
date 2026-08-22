@@ -252,18 +252,18 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
         <div className="flex items-center justify-between mt-1.5 px-1">
           {/* Model selector pill */}
           <div className="flex items-center gap-1.5">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px]" style={{ background: 'rgba(255,253,248,0.90)', border: '1px solid rgba(44,42,38,0.10)', color: 'var(--text-muted)' }}>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.14)', color: 'var(--text-secondary)' }}>
               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#5C7A5E' }} />
               <span>Sonnet 5</span>
             </div>
           </div>
 
           {/* Keyboard shortcut hint */}
-          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-            <kbd className="px-1 py-0.5 rounded font-mono" style={{ background: 'rgba(255,253,248,0.90)', color: 'var(--text-secondary)' }}>Enter</kbd>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Enter</kbd>
             {' '}kirim
-            <span className="mx-1.5" style={{ color: '#C8C5BC' }}>·</span>
-            <kbd className="px-1 py-0.5 rounded font-mono" style={{ background: 'rgba(255,253,248,0.90)', color: 'var(--text-secondary)' }}>Shift+Enter</kbd>
+            <span className="mx-1.5" style={{ color: 'var(--text-muted)' }}>·</span>
+            <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Shift+Enter</kbd>
             {' '}baris baru
           </p>
         </div>

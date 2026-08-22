@@ -51,7 +51,7 @@ export function EmptyState({ onPromptClick }: EmptyStateProps) {
       </h2>
       <p
         className="text-center mb-10 max-w-md leading-relaxed"
-        style={{ color: 'var(--text-muted)' }}
+        style={{ color: 'var(--text-secondary)' }}
       >
         I&apos;m your AI assistant — great at coding, writing, analysis,
         and creative tasks.
@@ -71,10 +71,10 @@ export function EmptyState({ onPromptClick }: EmptyStateProps) {
             className="group relative px-4 py-3.5 rounded-xl text-left text-sm
               transition-all duration-200 focus-ring min-h-[56px] flex items-center"
             style={{
-              background: 'rgba(255,253,248,0.90)',
+              background: 'rgba(255,253,248,0.95)',
               backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(44,42,38,0.10)',
-              color: 'var(--text-secondary)',
+              border: '1px solid rgba(44,42,38,0.12)',
+              color: 'var(--text-primary)',
             }}
           >
             {/* Hover gradient overlay */}

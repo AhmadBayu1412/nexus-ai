@@ -29,10 +29,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="id">
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
+        <a href="#main-content" className="skip-to-content">
+          Langsung ke konten utama
+        </a>
         <AuthProvider>
           <ToastProvider>
             {children}

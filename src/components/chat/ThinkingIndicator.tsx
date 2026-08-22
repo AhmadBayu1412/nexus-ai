@@ -11,6 +11,9 @@ export function ThinkingIndicator() {
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 min-h-[44px] rounded-2xl animate-fade-in w-fit"
+      role="status"
+      aria-live="polite"
+      aria-label="AI sedang memproses respon"
       style={{
         background: 'rgba(44, 42, 38, 0.88)',
         backdropFilter: 'blur(16px)',
