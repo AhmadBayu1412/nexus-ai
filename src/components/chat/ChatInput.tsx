@@ -172,7 +172,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
 
             {/* Send / Stop Button — morphing animation */}
             <div className="flex-shrink-0 flex items-end pb-0.5">
-              <motion.button
+              <button
                 type={isLoading ? 'button' : 'submit'}
                 onClick={isLoading ? handleStop : undefined}
                 disabled={!canSubmit && !isLoading && !submitting}
@@ -180,11 +180,11 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
                   'relative flex-shrink-0',
                   'w-11 h-11 rounded-xl',
                   'flex items-center justify-center',
-                  'transition-all duration-200',
+                  'transition-all duration-150',
                   'focus-ring btn-press',
                   'min-w-[44px] min-h-[44px]', // accessibility
                   isLoading
-                    ? 'text-white shadow-lg'
+                    ? 'text-white shadow-lg bg-[#4A6B7C]'
                     : canSubmit
                       ? 'text-white shadow-lg'
                       : 'text-white/30 cursor-not-allowed'
@@ -196,54 +196,16 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
                     ? {
                         background: 'linear-gradient(135deg, #4A6B7C 0%, #3d5a69 100%)',
                       }
-                    : isLoading
-                      ? {
-                          background: '#4A6B7C',
-                        }
-                      : {}),
+                    : {}),
                 }}
-                aria-label={isLoading ? 'Stop generation' : 'Send message'}
-                whileHover={
-                  shouldReduceMotion || (!canSubmit && !isLoading)
-                    ? {}
-                    : { scale: 1.06, filter: 'brightness(1.10)' }
-                }
-                whileTap={isLoading || canSubmit ? { scale: 0.92 } : {}}
-                transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+                aria-label="Send message"
               >
-                <AnimatePresence mode="wait" initial={false}>
-                  {isLoading ? (
-                    <motion.div
-                      key="stop"
-                      initial={{ scale: 0.5, opacity: 0, rotate: -90 }}
-                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                      exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
-                      transition={{ duration: 0.15, ease: 'easeOut' }}
-                    >
-                      <Square className="w-4 h-4 fill-current" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="send"
-                      initial={{ scale: 0.5, opacity: 0, y: 4 }}
-                      animate={{
-                        scale: 1,
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      exit={{ scale: 0.5, opacity: 0, y: -4 }}
-                      transition={{ duration: 0.15, ease: 'easeOut' }}
-                    >
-                      <ArrowUp
-                        className={cn(
-                          'w-4 h-4',
-                          canSubmit && 'animate-bounce-subtle'
-                        )}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+                {isLoading ? (
+                  <Square className="w-4 h-4 fill-current" aria-hidden="true" />
+                ) : (
+                  <ArrowUp className="w-4 h-4" aria-hidden="true" />
+                )}
+              </button>
             </div>
           </div>
         </div>
