@@ -535,7 +535,7 @@ export const ChatUI = memo(function ChatUI({
           <h1 className="text-sm font-semibold truncate" style={{ color: '#ffffff' }}>
             {initialTitle || 'New Chat'}
           </h1>
-          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>
             {isLoading ? 'Generating response...' : 'Ready'}
           </p>
         </div>
