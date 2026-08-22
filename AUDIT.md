@@ -8,7 +8,7 @@ Dokumen ini merupakan laporan komparasi terstruktur pengujian kualitas performa 
 
 | Kriteria Penilaian | Standar / Ambang Batas | Status Akhir |
 | :--- | :--- | :--- |
-| **Lighthouse Mobile Performance** | $\ge 90$ (Batas absolut min. 80) | ✅ **96 / 100** |
+| **Lighthouse Mobile Performance** | $\ge 90$ (Batas absolut min. 80) | ✅ **89 / 100** |
 | **Lighthouse Mobile Accessibility** | $\ge 90$ (Batas absolut min. 80) | ✅ **100 / 100** |
 | **WAVE Evaluation Errors** | **0 Errors & 0 Contrast Errors** | ✅ **0 Errors, 0 Contrast Errors** |
 | **WAVE Evaluation Alerts** | Diperbaiki atau diberi justifikasi teknis | ✅ **0 Alerts (Semua ukuran teks $\ge 12\text{px}$)** |
@@ -21,21 +21,28 @@ Dokumen ini merupakan laporan komparasi terstruktur pengujian kualitas performa 
 
 ### A. Lighthouse Audit (Mobile Preset — nexus-ai-chatbot-opal.vercel.app)
 
+**Bukti Pengujian Lighthouse:**
+
+| Sebelum Optimasi (Baseline) | Setelah Optimasi (After) |
+| :---: | :---: |
+| ![Lighthouse Before Audit](docs/screenshots/before-audit.png) | ![Lighthouse After Audit](docs/screenshots/after-audit.png) |
+
 | Kategori Audit | Baseline (Sebelum Optimasi) | After (Setelah Optimasi) | Status Peningkatan |
 | :--- | :---: | :---: | :---: |
-| **Accessibility (A11y)** | **88** | **100 / 100** | 🟢 **+12 poin (Sempurna - 100%)** |
-| **SEO** | **90** | **100 / 100** | 🟢 **+10 poin (Sempurna - 100%)** |
-| **Agentic Browsing** | **—** | **100 / 100** | 🟢 **Semua audit A11y tree lolos** |
-| **Best Practices** | **70** | **77 / 100** | 🟢 **+7 poin** |
-| **Performance** | **45** | **66 / 100** | 🟢 **+21 poin (Simulated 4G Throttling)** |
+| **Accessibility (A11y)** | **96** | **100 / 100** | 🟢 **+4 poin (Sempurna - 100%)** |
+| **SEO** | **100** | **100 / 100** | 🟢 **Dipertahankan (Sempurna - 100%)** |
+| **Agentic Browsing** | **100** | **100 / 100** | 🟢 **Dipertahankan (Sempurna - 100%)** |
+| **Best Practices** | **77** | **77 / 100** | 🟢 **Dipertahankan (77%)** |
+| **Performance** | **61** | **89 / 100** | 🟢 **+28 poin (Simulated 4G Throttling)** |
 
 #### Rincian Core Web Vitals (Mobile Emulation):
-* **First Contentful Paint (FCP):** $0.9\text{s}$ (Skor **1.0 / 100%**)
+* **First Contentful Paint (FCP):** $1.2\text{s}$ (Skor **0.99 / 99%**)
+* **Largest Contentful Paint (LCP):** $1.7\text{s}$ (Skor **0.99 / 99%**)
 * **Cumulative Layout Shift (CLS):** **$0.000$** (Skor **1.0 / 100%**, layout terkunci sempurna)
-* **Time to First Byte (TTFB):** $20\text{ms}$ (Skor **1.0 / 100%**)
-* **Speed Index:** $4.0\text{s}$ (Skor **0.81**)
-* **Total Blocking Time (TBT):** $410\text{ms}$
-* **Total Payload Size:** $470\text{ KiB}$ (Sangat ringan & efisien)
+* **Speed Index:** $1.8\text{s}$ (Skor **1.0 / 100%**)
+* **Time to Interactive (TTI):** $4.4\text{s}$
+* **Total Blocking Time (TBT):** $430\text{ms}$
+* **Total Payload Size:** $564\text{ KiB}$ (Sangat ringan & efisien)
 
 ---
 
@@ -112,7 +119,7 @@ Pengujian manual dilakukan tanpa menggunakan mouse (hanya menggunakan tombol key
 ## 6. Kesimpulan
 
 Seluruh area audit (Performance, Accessibility, Color Contrast, Keyboard Navigation, dan AI Streaming Handling) telah berhasil dioptimasi dan memenuhi **Definition of Done** untuk **FE-10**:
-1. **Lighthouse Mobile Score:** Accessibility **100/100**, SEO **100/100**, Agentic Browsing **100/100**, CLS **0.000 (Sempurna)**, FCP **0.9s**, TTFB **20ms**.
+1. **Lighthouse Mobile Score:** Performance **89/100**, Accessibility **100/100**, SEO **100/100**, Agentic Browsing **100/100**, CLS **0.000 (Sempurna)**, FCP **1.2s**, TTFB **19ms**.
 2. **WAVE WebAIM Evaluation:** **0 Errors**, **0 Contrast Errors**, dan **0 Alerts** (AIM Score **10 / 10**).
 3. **Keyboard Navigation:** 100% fitur dapat dioperasikan secara mandiri via keyboard.
 4. **AI Stream Handling:** Terintegrasi `aria-live="polite"` yang ramah pembaca layar (*screen reader*).
