@@ -15,6 +15,11 @@ test.describe('Primary Chat Flow E2E', () => {
       });
     });
 
+    // Enable simulated auth session for E2E testing
+    await page.addInitScript(() => {
+      sessionStorage.setItem('e2e_test_auth', 'true');
+    });
+
     // 1. Navigate to chat page
     await page.goto('/chat');
 

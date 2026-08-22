@@ -122,9 +122,9 @@ export async function signOut(): Promise<void> {
 export function getCurrentUser(): User | null {
   try {
     const firebaseAuth = getFirebaseAuth();
-    return firebaseAuth ? firebaseAuth.currentUser : mockTestUser;
+    return firebaseAuth ? firebaseAuth.currentUser : null;
   } catch {
-    return mockTestUser;
+    return null;
   }
 }
 
@@ -141,10 +141,8 @@ export function onAuthChange(callback: (user: User | null) => void): () => void 
     console.warn('[Firebase] onAuthStateChanged skipped:', err);
   }
 
-  // Fallback for CI/E2E test environment without live Firebase credentials:
-  // Supply mock test user so tests proceed seamlessly
   const timer = setTimeout(() => {
-    callback(mockTestUser);
+    callback(null);
   }, 10);
 
   return () => clearTimeout(timer);

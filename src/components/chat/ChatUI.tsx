@@ -19,6 +19,8 @@ import { ThinkingIndicator } from './ThinkingIndicator';
 import { SmartButton } from '@/components/ui/SmartButton';
 import { getFirebaseAuth } from '@/lib/auth/firebase';
 import { useToast } from '@/components/ui/Toast';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
 import type { ChatMessage as ChatMessageType, MessageFeedback } from '@/types/chat';
 
 interface ChatUIProps {
@@ -46,6 +48,8 @@ export const ChatUI = memo(function ChatUI({
   initialTitle,
   onChatCreated,
 }: ChatUIProps) {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPinned, setIsPinned] = useState(true);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
@@ -538,6 +542,31 @@ export const ChatUI = memo(function ChatUI({
           <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>
             {isLoading ? 'Generating response...' : 'Ready'}
           </p>
+        </div>
+
+        {/* Right side: User Profile / Logout Button */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {user ? (
+            <button
+              onClick={async () => {
+                await signOut();
+                router.push('/');
+              }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors focus-ring border border-white/10"
+              title="Keluar dari akun"
+              aria-label="Keluar dari akun"
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push('/')}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#4A6B7C] text-white hover:bg-[#3d5a69] transition-colors focus-ring"
+              aria-label="Masuk ke Akun"
+            >
+              Sign in
+            </button>
+          )}
         </div>
       </div>
 

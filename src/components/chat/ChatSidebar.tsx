@@ -11,7 +11,7 @@
 import { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Plus, MessageSquare, Menu, X, Trash2, Bot, LayoutGrid, Sparkles, Code, SlidersHorizontal } from 'lucide-react';
+import { Plus, MessageSquare, Menu, X, Trash2, Bot, LayoutGrid, Sparkles, Code, SlidersHorizontal, LogOut, LogIn, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { SmartButton } from '@/components/ui/SmartButton';
@@ -142,7 +142,7 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { getIdToken } = useAuth();
+  const { user, signOut, getIdToken } = useAuth();
   const { toast } = useToast();
   const lastNewChatClickRef = useRef<number>(0);
 
@@ -333,9 +333,55 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.70)' }}>
+        {/* User Profile & Logout Footer */}
+        <div className="p-3 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          {user ? (
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'Pengguna'}
+                    className="w-8 h-8 rounded-full border border-white/20 flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-[#4A6B7C]/40 border border-white/20 flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-4 h-4 text-white/90" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium truncate" style={{ color: '#ffffff' }}>
+                    {user.displayName || 'Pengguna'}
+                  </p>
+                  <p className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    {user.email || 'Akun Aktif'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  router.push('/');
+                  toast({ message: '👋 Anda telah keluar.', type: 'info', duration: 2500 });
+                }}
+                className="p-2 rounded-lg text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-colors focus-ring"
+                title="Keluar (Logout)"
+                aria-label="Keluar dari akun"
+              >
+                <LogOut className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push('/')}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#4A6B7C] hover:bg-[#3d5a69] text-white text-xs font-medium transition-colors focus-ring"
+              aria-label="Masuk ke Akun"
+            >
+              <LogIn className="w-4 h-4" aria-hidden="true" />
+              <span>Masuk dengan GitHub</span>
+            </button>
+          )}
+          <p className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.70)' }}>
             Nexus AI adalah AI dan bisa keliru.
           </p>
         </div>

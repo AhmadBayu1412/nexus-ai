@@ -20,12 +20,7 @@ const STARTER_PROMPTS = [
 
 export function EmptyState({ onPromptClick }: EmptyStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="flex flex-col items-center justify-center min-h-[60vh]"
-    >
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
       {/* Bot avatar with ambient glow */}
       <div className="relative mb-8">
         <div
@@ -59,17 +54,12 @@ export function EmptyState({ onPromptClick }: EmptyStateProps) {
 
       {/* Prompt starters grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg px-4">
-        {STARTER_PROMPTS.map((prompt, i) => (
-          <motion.button
+        {STARTER_PROMPTS.map((prompt) => (
+          <button
             key={prompt}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 + i * 0.08, ease: 'easeOut' }}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
             onClick={() => onPromptClick(prompt)}
             className="group relative px-4 py-3.5 rounded-xl text-left text-sm
-              transition-all duration-200 focus-ring min-h-[56px] flex items-center"
+              transition-all duration-200 hover:-translate-y-0.5 active:scale-98 focus-ring min-h-[56px] flex items-center"
             style={{
               background: 'rgba(255,253,248,0.95)',
               backdropFilter: 'blur(16px)',
@@ -96,10 +86,10 @@ export function EmptyState({ onPromptClick }: EmptyStateProps) {
               </div>
               <span className="flex-1 leading-snug">{prompt}</span>
             </div>
-          </motion.button>
+          </button>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
