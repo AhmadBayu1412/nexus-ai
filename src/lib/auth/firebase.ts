@@ -15,6 +15,16 @@ import {
   User,
 } from 'firebase/auth';
 
+const shouldBypassAuth = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === '1';
+
+const e2eBypassUser = {
+  uid: 'e2e-bypass-user',
+  displayName: 'E2E Test User',
+  email: 'e2e@example.com',
+  photoURL: null,
+  getIdToken: async () => 'e2e-bypass-token',
+} as unknown as User;
+
 // Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -58,6 +68,10 @@ githubProvider.addScope('user:email');
  * Sign in with GitHub using Firebase Auth
  */
 export async function signInWithGitHub(): Promise<User> {
+  if (shouldBypassAuth) {
+    return e2eBypassUser;
+  }
+
   const firebaseAuth = getFirebaseAuth();
   const result = await signInWithPopup(firebaseAuth, githubProvider);
   // This gives you a GitHub Access Token
@@ -76,6 +90,11 @@ export async function signInWithGitHub(): Promise<User> {
  * Sign out from Firebase
  */
 export async function signOut(): Promise<void> {
+  if (shouldBypassAuth) {
+    sessionStorage.removeItem('github_token');
+    return;
+  }
+
   const firebaseAuth = getFirebaseAuth();
   sessionStorage.removeItem('github_token');
   await firebaseSignOut(firebaseAuth);
@@ -85,6 +104,10 @@ export async function signOut(): Promise<void> {
  * Get the current Firebase user
  */
 export function getCurrentUser(): User | null {
+  if (shouldBypassAuth) {
+    return e2eBypassUser;
+  }
+
   const firebaseAuth = getFirebaseAuth();
   return firebaseAuth.currentUser;
 }
@@ -93,6 +116,11 @@ export function getCurrentUser(): User | null {
  * Subscribe to auth state changes
  */
 export function onAuthChange(callback: (user: User | null) => void): () => void {
+  if (shouldBypassAuth) {
+    callback(e2eBypassUser);
+    return () => {};
+  }
+
   const firebaseAuth = getFirebaseAuth();
   return onAuthStateChanged(firebaseAuth, callback);
 }

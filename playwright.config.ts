@@ -19,6 +19,10 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
+    env: {
+      ...process.env,
+      NEXT_PUBLIC_E2E_BYPASS_AUTH: '1',
+    },
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
