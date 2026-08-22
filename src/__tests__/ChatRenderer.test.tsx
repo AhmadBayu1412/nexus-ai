@@ -18,7 +18,7 @@ describe('Chat Message Renderer Tests', () => {
       id: 'msg-stream-1',
       role: 'assistant',
       content: 'Hello! **I am streaming** a response...',
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
 
     render(<ChatMessage message={mockStreamingMessage} isStreaming={true} />);
@@ -58,7 +58,7 @@ describe('Chat Message Renderer Tests', () => {
       id: 'msg-code-1',
       role: 'assistant',
       content: 'Here is some code:\n```js\nconsole.log("hello world");\n```',
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
 
     render(<ChatMessage message={mockCodeMessage} isStreaming={false} />);

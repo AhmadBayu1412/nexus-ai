@@ -544,8 +544,8 @@ export const ChatUI = memo(function ChatUI({
           </p>
         </div>
 
-        {/* Right side: User Profile / Logout Button */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Right side: User Profile / Logout Button (Hidden on mobile) */}
+        <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
           {user ? (
             <button
               onClick={async () => {
@@ -554,7 +554,6 @@ export const ChatUI = memo(function ChatUI({
               }}
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors focus-ring border border-white/10"
               title="Keluar dari akun"
-              aria-label="Keluar dari akun"
             >
               Sign out
             </button>
@@ -562,7 +561,6 @@ export const ChatUI = memo(function ChatUI({
             <button
               onClick={() => router.push('/')}
               className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#4A6B7C] text-white hover:bg-[#3d5a69] transition-colors focus-ring"
-              aria-label="Masuk ke Akun"
             >
               Sign in
             </button>
