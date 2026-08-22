@@ -340,8 +340,12 @@ export function ChatSidebar({ chats, activeChatId, onNewChat, onDeleteChat }: Ch
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 {user.photoURL ? (
                   <img
-                    src={user.photoURL}
+                    src={user.photoURL.includes('githubusercontent.com') ? `${user.photoURL}&s=64` : user.photoURL}
                     alt={user.displayName || 'Pengguna'}
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    decoding="async"
                     className="w-8 h-8 rounded-full border border-white/20 flex-shrink-0"
                   />
                 ) : (

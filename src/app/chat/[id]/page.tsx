@@ -27,7 +27,7 @@ export default function ChatPage() {
   const id = params.id as string;
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [currentChat, setCurrentChat] = useState<ChatData | null>(null);
-  const [isLoadingChat, setIsLoadingChat] = useState(true);
+  const [isLoadingChat, setIsLoadingChat] = useState(() => id !== 'new');
   // authReady = false while Firebase auth is still initializing.
   // Prevents premature renders when auth is mid-initialization on Vercel cold start.
   // Derived directly from loading — no setState in effects needed (React 19 compat).
@@ -154,7 +154,7 @@ export default function ChatPage() {
     router.push('/chat/new');
   }, [id, currentChat, isActuallyNew, promotedChatId]);
 
-  if (loading || isLoadingChat) {
+  if ((loading && id !== 'new') || isLoadingChat) {
     return (
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 overflow-y-auto px-4 py-6">

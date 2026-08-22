@@ -8,7 +8,6 @@
  * Zero dependency — accepts a callback for prompt selection.
  */
 
-import { motion } from 'framer-motion';
 import type { EmptyStateProps } from '@/types/chat';
 
 const STARTER_PROMPTS = [
