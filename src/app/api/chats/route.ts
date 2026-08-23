@@ -5,16 +5,28 @@
  * POST /api/chats - Create a new chat
  */
 
-import { streamText } from 'ai';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import { getChatsByUserId, createChat } from '@/lib/db/queries';
 import { logger } from '@/lib/logger';
 import { verifyIdToken } from '@/lib/auth/firebaseAdmin';
+
+export const maxDuration = 30;
 
 // ============================================================
 // GET /api/chats - List all chats for the user
 // ============================================================
 export async function GET(req: Request) {
+  const clientIp = getClientIp(req);
+  const ipLimit = await rateLimit(clientIp, { limit: 60, windowSeconds: 60, prefix: 'ratelimit:chats:get' });
+  if (!ipLimit.success) {
+    return new Response(JSON.stringify({ error: 'RATE_LIMIT_EXCEEDED' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.max(1, Math.ceil((ipLimit.reset - Date.now()) / 1000))),
+      },
+    });
+  }
   const authHeader = req.headers.get('authorization');
   const idToken = authHeader?.replace('Bearer ', '');
 

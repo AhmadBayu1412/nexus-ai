@@ -28,6 +28,8 @@ interface ChatInputProps {
 const MAX_HEIGHT = 200;
 const MIN_HEIGHT = 24;
 
+const MAX_INPUT_LENGTH = 4000;
+
 export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -94,7 +96,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim() && !isLoading) {
+      if (input.trim() && input.length <= MAX_INPUT_LENGTH && !isLoading) {
         formRef.current?.requestSubmit();
       }
     }
@@ -106,7 +108,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || input.length > MAX_INPUT_LENGTH || isLoading) return;
     setSubmitting(true);
     setInput('');
     if (textareaRef.current) {
@@ -120,7 +122,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
     if (isLoading) onStop();
   };
 
-  const canSubmit = input.trim().length > 0 && !isLoading;
+  const canSubmit = input.trim().length > 0 && input.length <= MAX_INPUT_LENGTH && !isLoading;
 
   return (
     <div className="relative">
@@ -158,6 +160,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
               <textarea
                 ref={textareaRef}
                 value={input}
+                maxLength={MAX_INPUT_LENGTH}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onFocus={handleFocus}
@@ -210,7 +213,7 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
           </div>
         </div>
 
-        {/* Bottom row: model pill + shortcut hints */}
+        {/* Bottom row: model pill + character counter + shortcut hints */}
         <div className="flex items-center justify-between mt-1.5 px-1">
           {/* Model selector pill */}
           <div className="flex items-center gap-1.5">
@@ -220,14 +223,29 @@ export function ChatInput({ input, setInput, onSubmit, isLoading, onStop }: Chat
             </div>
           </div>
 
-          {/* Keyboard shortcut hint */}
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Enter</kbd>
-            {' '}kirim
-            <span className="mx-1.5" style={{ color: 'var(--text-muted)' }}>·</span>
-            <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Shift+Enter</kbd>
-            {' '}baris baru
-          </p>
+          <div className="flex items-center gap-2.5">
+            {/* Input Caps Counter Indicator when user types lengthy content */}
+            {input.length >= 3000 && (
+              <span
+                className={cn(
+                  'text-xs font-mono transition-colors',
+                  input.length >= 3800 ? 'text-rose-600 font-semibold' : 'text-amber-700'
+                )}
+                aria-live="polite"
+              >
+                {input.length}/{MAX_INPUT_LENGTH}
+              </span>
+            )}
+
+            {/* Keyboard shortcut hint */}
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Enter</kbd>
+              {' '}kirim
+              <span className="mx-1.5" style={{ color: 'var(--text-muted)' }}>·</span>
+              <kbd className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'rgba(255,253,248,0.95)', border: '1px solid rgba(44,42,38,0.12)', color: 'var(--text-primary)' }}>Shift+Enter</kbd>
+              {' '}baris baru
+            </p>
+          </div>
         </div>
       </form>
     </div>

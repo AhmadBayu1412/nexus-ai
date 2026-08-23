@@ -13,7 +13,7 @@
 
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import { saveChatAndMessages, updateChatTitle, createChat, getChatWithMessages } from '@/lib/db/queries';
 import { generateChatTitle } from '@/lib/ai/title-generator';
 import { openai, SYSTEM_PROMPT, MODEL_CONFIG } from '@/lib/ai/config';
@@ -192,11 +192,44 @@ function parseMessages(raw: unknown[]): ValidMessage[] | null {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────
+// Production Hygiene Constants
+// ──────────────────────────────────────────────────────────────────────────────
+const MAX_INPUT_CHARS = 4000;
+const MAX_CONTEXT_MESSAGES = 30;
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Route Handler
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const startTime = Date.now();
+  const clientIp = getClientIp(req);
+
+  // ── Pre-Auth IP Rate Limit (DDoS / Auth-Flooding Protection) ────────────────
+  const ipLimitResult = await rateLimit(clientIp, {
+    limit: 30,
+    windowSeconds: 60,
+    prefix: 'ratelimit:ip',
+  });
+  if (!ipLimitResult.success) {
+    logger.warn('IP rate limit exceeded', { ip: clientIp });
+    return new Response(
+      JSON.stringify({
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: 'Terlalu banyak permintaan dari IP ini. Silakan coba beberapa saat lagi.',
+      }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': String(ipLimitResult.limit),
+          'X-RateLimit-Remaining': String(ipLimitResult.remaining),
+          'Retry-After': String(Math.max(1, Math.ceil((ipLimitResult.reset - Date.now()) / 1000))),
+        },
+      }
+    );
+  }
 
   // ── Auth ────────────────────────────────────────────────────────────────────
   const authHeader = req.headers.get('authorization');
@@ -212,33 +245,66 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
   }
 
-  // ── Rate Limit ───────────────────────────────────────────────────────────────
-  const { success, limit, remaining, reset } = await rateLimit(userId);
+  // ── User-Level Rate Limit (Upstash Redis / In-Memory Fallback) ───────────────
+  const { success, limit, remaining, reset } = await rateLimit(userId, {
+    limit: 10,
+    windowSeconds: 10,
+    prefix: 'ratelimit:user',
+  });
   if (!success) {
-    return new Response(JSON.stringify({ error: 'RATE_LIMIT_EXCEEDED' }), {
-      status: 429, headers: {
-        'Content-Type': 'application/json',
-        'X-RateLimit-Remaining': String(remaining),
-        'Retry-After': String(Math.ceil((reset - Date.now()) / 1000)),
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: 'Batas frekuensi chat tercapai (maks 10 pesan / 10 detik). Harap tunggu sebentar.',
+      }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': String(limit),
+          'X-RateLimit-Remaining': String(remaining),
+          'Retry-After': String(Math.max(1, Math.ceil((reset - Date.now()) / 1000))),
+        },
+      }
+    );
   }
 
-  // ── Parse Request ────────────────────────────────────────────────────────────
+  // ── Parse & Validate Request Body ───────────────────────────────────────────
   let body: { messages?: unknown[]; chatId?: string };
-  try { body = await req.json(); } catch {
+  try {
+    body = await req.json();
+  } catch {
     return new Response(JSON.stringify({ error: 'INVALID_REQUEST' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
+
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
     return new Response(JSON.stringify({ error: 'Messages required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
-  const messages = parseMessages(body.messages);
+
+  let messages = parseMessages(body.messages);
   if (!messages) {
     return new Response(JSON.stringify({ error: 'Invalid message format' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
+
   const lastMessage = messages.at(-1);
   if (!lastMessage?.content?.trim()) {
     return new Response(JSON.stringify({ error: 'EMPTY_MESSAGE' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  // ── Input Caps: Character Limit Protection ──────────────────────────────────
+  if (lastMessage.content.length > MAX_INPUT_CHARS) {
+    return new Response(
+      JSON.stringify({
+        error: 'MESSAGE_TOO_LONG',
+        message: `Pesan melebihi batas maksimum ${MAX_INPUT_CHARS} karakter (diterima ${lastMessage.content.length} karakter).`,
+      }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // ── Input Caps: Context Window History Cap ──────────────────────────────────
+  if (messages.length > MAX_CONTEXT_MESSAGES) {
+    messages = messages.slice(-MAX_CONTEXT_MESSAGES);
   }
 
   let chatId = body.chatId || null;

@@ -8,6 +8,9 @@
 import { getChatWithMessages, deleteChat } from '@/lib/db/queries';
 import { logger } from '@/lib/logger';
 import { verifyIdToken } from '@/lib/auth/firebaseAdmin';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+export const maxDuration = 30;
 
 // ============================================================
 // GET /api/chats/[id] - Get chat with messages (IDOR protected)
@@ -16,6 +19,17 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const clientIp = getClientIp(req);
+  const ipLimit = await rateLimit(clientIp, { limit: 60, windowSeconds: 60, prefix: 'ratelimit:chat:item' });
+  if (!ipLimit.success) {
+    return new Response(JSON.stringify({ error: 'RATE_LIMIT_EXCEEDED' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.max(1, Math.ceil((ipLimit.reset - Date.now()) / 1000))),
+      },
+    });
+  }
   const authHeader = req.headers.get('authorization');
   const idToken = authHeader?.replace('Bearer ', '');
 

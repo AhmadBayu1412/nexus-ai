@@ -11,8 +11,24 @@ import { NextResponse } from 'next/server';
 import { verifyIdToken } from '@/lib/auth/firebaseAdmin';
 import { updateMessageFeedback } from '@/lib/db/queries';
 import { logger } from '@/lib/logger';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+export const maxDuration = 15;
 
 export async function POST(req: Request) {
+  const clientIp = getClientIp(req);
+  const ipLimit = await rateLimit(clientIp, { limit: 30, windowSeconds: 60, prefix: 'ratelimit:feedback' });
+  if (!ipLimit.success) {
+    return NextResponse.json(
+      { error: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.max(1, Math.ceil((ipLimit.reset - Date.now()) / 1000))),
+        },
+      }
+    );
+  }
   const authHeader = req.headers.get('authorization');
   const idToken = authHeader?.replace('Bearer ', '');
 
