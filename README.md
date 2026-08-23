@@ -1,14 +1,28 @@
-# Nexus AI — Intelligent Streaming Chatbot & Agentic Platform
+# Nexus AI — Enterprise-Grade Streaming Chatbot & Agentic Platform
 
-A production-grade, state-of-the-art AI chat interface and agentic research platform built with **Next.js 16 (App Router)**, **React 19**, **Vercel AI SDK**, **Prisma ORM**, and **Tailwind CSS v4**. Features token-by-token streaming, multi-step tool execution, virtual chat lifecycle management, robust IDOR protection, automated CI/CD testing safety net, and a certified **100/100 Accessibility** audit score.
+A production-grade, state-of-the-art AI conversational interface and autonomous lead research platform built with **Next.js 16 (App Router)**, **React 19**, **Vercel AI SDK**, **Prisma ORM**, and **Tailwind CSS v4**. Engineered with token-by-token streaming, multi-step tool execution, virtual chat lifecycle management, robust IDOR protection, automated CI/CD testing safety net, production hygiene API rate limiting, and a certified **100/100 Accessibility** audit score.
 
-[**Live Demo**](https://nexus-ai-chat-five.vercel.app/chat) &nbsp;·&nbsp; [**GitHub Repository**](https://github.com/AhmadBayu1412/nexus-ai) &nbsp;·&nbsp; [**Documentation Index**](#-documentation-index)
+[**Live Production URL**](https://nexus-ai-chat-five.vercel.app/chat) &nbsp;·&nbsp; [**GitHub Repository**](https://github.com/AhmadBayu1412/nexus-ai) &nbsp;·&nbsp; [**Documentation Index**](#-documentation-index)
 
 ---
 
-## 📸 Visual Showcase
+## 📸 Overview & Visual Showcase
 
-| Chat Streaming & Reasoning | Chat History & Virtual State |
+### The Problem Nexus AI Solves
+Traditional AI chatbots often suffer from brittle streaming lifecycles, slow time-to-first-token, sidebar clutter from empty abandoned chats, lack of enterprise context or real-time web verification, vulnerable API endpoints susceptible to token-draining abuse, and poor accessibility for keyboard and screen-reader users.
+
+**Nexus AI** solves these challenges by combining:
+1. **Real-time SSE token streaming** with zero layout thrashing and smooth thinking indicator handoffs.
+2. **Autonomous Lead Scoring (FE-07)** with live Google Search via the Tavily Search API.
+3. **Lazy/Virtual Chat Management** preventing empty chat clutter in the database.
+4. **Ironclad Production Hygiene & IDOR Defense** protecting API keys, quotas, and user data.
+5. **Certified WCAG AA Accessibility** with full keyboard navigation and assistive screen-reader announcements.
+
+---
+
+### Interface Screenshots
+
+| Chat Streaming & Reasoning Handoff | Chat History & Virtual State |
 | :---: | :---: |
 | ![Nexus AI — Chat Streaming](docs/screenshots/chat-streaming.png) | ![Nexus AI — Chat List](docs/screenshots/chat-list.png) |
 
@@ -18,11 +32,30 @@ A production-grade, state-of-the-art AI chat interface and agentic research plat
 
 ---
 
-## ⚡ Key Highlights & Metrics
+## 🌐 Production Deployment & Cross-Browser Validation
+
+- **Live Production URL:** [https://nexus-ai-chat-five.vercel.app/chat](https://nexus-ai-chat-five.vercel.app/chat)
+- **Deployment Platform:** Vercel (Edge Network + Serverless Node.js 20 Runtime)
+- **Database:** Neon Serverless PostgreSQL with SSL encryption
+
+### Cross-Browser Testing Matrix
+
+| Browser / Client | Platform | Status | Validation Notes |
+|---|---|:---:|---|
+| **Google Chrome** | macOS / Windows / Linux | ✅ Pass | Full 60fps streaming, WebGL animations, CSS blur filters |
+| **Mozilla Firefox** | macOS / Windows / Linux | ✅ Pass | Strict standard scrollbar & layout positioning |
+| **Desktop Safari** | macOS (WebKit) | ✅ Pass | Backdrop-filter glassmorphism, popLayout transitions |
+| **Mobile Safari (iOS)**| iOS 16+ (iPhone) | ✅ Pass | `100dvh` viewport height & virtual keyboard offset tracking |
+| **Mobile Chrome** | Android | ✅ Pass | Responsive drawer sidebar & minimum 44px tap targets |
+
+---
+
+## ⚡ Key Highlights & Certified Metrics
 
 - 🎯 **Lighthouse Mobile Score**: **100/100** Accessibility, **100/100** SEO, **100/100** Agentic Browsing, **89/100** Mobile Performance (Simulated 4G).
 - ♿ **WAVE Evaluation (WebAIM)**: **0 Errors**, **0 Contrast Errors**, **0 Alerts**, **10/10 AIM Score** (WCAG AA Compliant).
-- 🧪 **Automated Testing Safety Net**: 100% pass rate on Vitest + React Testing Library (accessible query selectors) and isolated Playwright E2E with network mocking.
+- 🧪 **Automated Testing Safety Net**: 100% pass rate on Vitest + React Testing Library (accessible query selectors) and isolated Playwright E2E with network route interception.
+- 🛡️ **Production Hygiene**: Pre-auth IP rate limiting, Upstash Redis user rate limiting, 4,000 char input caps, 30-message history context window limit, and edge payload guards.
 - 🤖 **Multi-Step Agentic Tool Calling**: Autonomous company research via Tavily Search API with dynamic lead scoring and 4-state UI lifecycle transitions.
 - 🚀 **Zero Empty-Chat Clutter**: Lazy chat creation pattern initializes conversations virtually (`/chat/new`) and persists them only upon the first message dispatch without stream interruption.
 
@@ -30,27 +63,106 @@ A production-grade, state-of-the-art AI chat interface and agentic research plat
 
 ## 📑 Table of Contents
 
-1. [System Architecture & 11-Layer Engineering](#-system-architecture--11-layer-engineering)
-2. [Core Features & Capabilities](#-core-features--capabilities)
-3. [Agentic Lead Scoring Pipeline (FE-07)](#-agentic-lead-scoring-pipeline-fe-07)
-4. [Resilience, Security & Error Matrix (FE-08)](#-resilience-security--error-matrix-fe-08)
-5. [Automated Testing & Quality Assurance (FE-09)](#-automated-testing--quality-assurance-fe-09)
-6. [Production Hygiene & API Quota Protection](#-production-hygiene--api-quota-protection)
-7. [Accessibility & Performance Audit (FE-10)](#-accessibility--performance-audit-fe-10)
-8. [SmartButton Motion & State Rationale](#-smartbutton-motion--state-rationale)
-9. [Database Schema & Data Model](#-database-schema--data-model)
-10. [Tech Stack](#-tech-stack)
-11. [Getting Started & Installation](#-getting-started--installation)
+1. [Run Instructions (Local Setup)](#-run-instructions-local-setup)
+2. [Environment Variables](#-environment-variables)
+3. [Architecture & Technical Decisions](#-architecture--technical-decisions)
+4. [How AI Tools Built This (Human-AI Collaboration)](#-how-ai-tools-built-this-human-ai-collaboration)
+5. [Production Hygiene & API Quota Protection](#-production-hygiene--api-quota-protection)
+6. [Agentic Lead Scoring Pipeline (FE-07)](#-agentic-lead-scoring-pipeline-fe-07)
+7. [Resilience, Security & Error Matrix (FE-08)](#-resilience-security--error-matrix-fe-08)
+8. [Automated Testing & Quality Assurance (FE-09)](#-automated-testing--quality-assurance-fe-09)
+9. [Accessibility & Performance Audit (FE-10)](#-accessibility--performance-audit-fe-10)
+10. [Database Schema & Data Model](#-database-schema--data-model)
+11. [Tech Stack](#-tech-stack)
 12. [Available Scripts](#-available-scripts)
 13. [Project Directory Structure](#-project-directory-structure)
-14. [Keyboard Shortcuts](#-keyboard-shortcuts)
+14. [Git Commit Standards](#-git-commit-standards)
 15. [Documentation Index](#-documentation-index)
 
 ---
 
-## 🏛 System Architecture & 11-Layer Engineering
+## 🚀 Run Instructions (Local Setup)
 
-The project is architected following an 11-layer modular engineering specification detailed in the `docs/layers/` directory:
+Follow these straightforward steps to clone, configure, and run Nexus AI locally:
+
+### Prerequisites
+- **Node.js**: v18.18+ or v20+
+- **npm** or **pnpm**
+- **LLM API Key**: OpenAI or KoboLLM compatible API key
+- **Tavily API Key**: (Optional, for lead scoring) [Get free at app.tavily.com](https://app.tavily.com)
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/AhmadBayu1412/nexus-ai.git
+cd nexus-ai
+```
+
+### Step 2: Install Dependencies
+```bash
+npm install
+```
+
+### Step 3: Configure Environment Variables
+Copy the `.env.example` template to `.env.local`:
+```bash
+cp .env.example .env.local
+```
+Fill in the parameters as detailed in the [Environment Variables](#-environment-variables) section.
+
+### Step 4: Initialize the Database
+Push the Prisma schema to create the local database (`dev.db`):
+```bash
+# Push schema to SQLite database (dev)
+npm run db:push
+
+# Generate Prisma Client bindings
+npm run db:generate
+
+# (Optional) Open Prisma Studio database viewer
+npm run db:studio
+```
+
+### Step 5: Start the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser to start chatting.
+
+### Step 6: Run Automated Tests
+```bash
+# Run unit & component tests (Vitest)
+npm run test
+
+# Run End-to-End browser tests (Playwright)
+npm run test:e2e
+```
+
+---
+
+## 🔑 Environment Variables
+
+The following environment variables configure database connectivity, authentication, AI providers, and rate limiting:
+
+| Variable Name | Required | Description | Example / Format |
+|---|:---:|---|---|
+| `DATABASE_URL` | **Yes** | PostgreSQL connection string (production) or SQLite path (local dev) | `file:./dev.db` or `postgresql://user:pass@host/db?sslmode=require` |
+| `NEXTAUTH_URL` | **Yes** | Canonical URL of your deployment | `http://localhost:3000` or `https://nexus-ai-chat-five.vercel.app` |
+| `NEXTAUTH_SECRET` | **Yes** | Encryption secret for NextAuth sessions | `openssl rand -base64 32` |
+| `OPENAI_API_KEY` | **Yes** | API key for KoboLLM or OpenAI LLM provider | `sk-proj-...` or `kobo-...` |
+| `OPENAI_BASE_URL` | Optional | Custom base URL for OpenAI-compatible LLM endpoints | `https://api.kobollm.com/v1` |
+| `TAVILY_API_KEY` | Optional | API key for autonomous web research & lead scoring | `tvly-dev-xxxx...` |
+| `UPSTASH_REDIS_REST_URL` | Optional | Upstash Redis REST endpoint for distributed rate limiting | `https://xxxx.upstash.io` |
+| `UPSTASH_REDIS_REST_TOKEN`| Optional | Upstash Redis REST access token | `AXxxxx...` |
+| `AUTH_GITHUB_ID` | Optional | GitHub OAuth Application Client ID | `Iv1.xxxxxxxx` |
+| `AUTH_GITHUB_SECRET` | Optional | GitHub OAuth Application Client Secret | `xxxxxxxxxxxxxxxx` |
+| `AUTH_GOOGLE_ID` | Optional | Google Cloud OAuth Client ID | `xxxx.apps.googleusercontent.com` |
+| `AUTH_GOOGLE_SECRET` | Optional | Google Cloud OAuth Client Secret | `GOCSPX-xxxx` |
+
+---
+
+## 🏛 Architecture & Technical Decisions
+
+The codebase adheres to an 11-layer modular architecture defined in [`docs/layers/`](docs/layers/):
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -74,38 +186,96 @@ The project is architected following an 11-layer modular engineering specificati
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 11-Layer Specification Breakdown
+### Architectural Decisions & Stack Rationale
 
-- **[Layer 01: Visual UI Design System](docs/layers/layer-01-visual-ui.md)** — Dark/light glassmorphic tokens, WCAG AA high-contrast palette (`--text-muted`, `--sidebar-text-secondary`), dynamic viewport height units (`100dvh`), and responsive drawer navigation.
-- **[Layer 02: UX Audit & Micro-interactions](docs/layers/layer-02-ux-audit.md)** — Frictionless auto-scroll pinning with unpin detection, "Jump to Latest" indicator, thinking indicator handoff, and immediate generation abort (Escape / Stop button).
-- **[Layer 03: Business Flow & Lifecycle](docs/layers/layer-03-business-flow.md)** — Virtual chat promotion flow (`/chat/new` $\to$ `/chat/[id]`), silent URL synchronization via `window.history.replaceState`, eliminating empty database records.
-- **[Layer 04: State Management & React Lifecycle](docs/layers/layer-04-state-management.md)** — Vercel AI SDK `useChat` integration, `useChatIdRef` hook synchronization preventing component unmounting during promotion, and optimistic UI mutations.
-- **[Layer 05: API Contracts & Communication](docs/layers/layer-05-api-contract.md)** — Server-Sent Events (SSE) data stream contract (`toDataStreamResponse`), tool call and result payloads, structured error boundaries, and chat management endpoints.
-- **[Layer 06: Database Architecture & Prisma ORM](docs/layers/layer-06-database-architecture.md)** — PostgreSQL relational schema with compound indices (`userId + createdAt`), non-blocking asynchronous message persistence inside `onFinish` callbacks.
-- **[Layer 07: Business Rules & Edge Cases](docs/layers/layer-07-business-rules.md)** — Context window bounds, 3-second button debounce spam protection, message size limits, and graceful degradation on API failures.
-- **[Layer 08: System Architecture & Topology](docs/layers/layer-08-system-architecture.md)** — Serverless/Edge compute model on Vercel, server-only secret isolation, Turbopack bundling, and structured modular boundaries.
-- **[Layer 09: Security & Access Control](docs/layers/layer-09-security-access-control.md)** — IDOR (Insecure Direct Object Reference) defense returning 404 for unauthorized attempts, NextAuth v5 session validation, Firebase Admin verification, and Upstash Redis rate limiting.
-- **[Layer 10: Testing Strategy & QA](docs/layers/layer-10-testing-strategy.md)** — Vitest component testing with accessible ARIA queries, mock-intercepted Playwright E2E suite, and GitHub Actions CI gatekeeper.
-- **[Layer 11: Observability & Telemetry](docs/layers/layer-11-observability.md)** — Structured backend logging, step-by-step tool tracing, and performance monitoring.
+1. **Next.js 16 (App Router) & React 19**:
+   - *Rationale:* Leverages React Server Components for fast initial page load and SEO while isolating interactive streaming interfaces to Client Components (`'use client'`). Turbopack provides lightning-fast local compilation.
+2. **Vercel AI SDK (`ai` package)**:
+   - *Rationale:* Standardizes token-by-token Server-Sent Events (SSE) via `toDataStreamResponse()`, provides native hook abstractions (`useChat`), and simplifies multi-step tool execution (`maxSteps: 10`) for autonomous agents.
+3. **Lazy / Virtual Chat Lifecycle (Layer 03)**:
+   - *Rationale:* Initiates new chats in memory at `/chat/new`. The database record is only generated upon the first message dispatch. Stream continuity is preserved using `window.history.replaceState` and `useChatIdRef`, eliminating empty chat records and page re-mount flickers.
+4. **IDOR Defense & 404 Masking (Layer 09)**:
+   - *Rationale:* Every chat query (`GET`, `POST`, `DELETE`) verifies ownership against the authenticated Firebase/NextAuth user ID. Unauthorized queries return `404 Not Found` (rather than `403 Forbidden`) to prevent leaking the existence of other users' session IDs.
+5. **Tailwind CSS v4 + Framer Motion (Layer 01 & 02)**:
+   - *Rationale:* CSS design tokens manage high-contrast light/dark themes with zero runtime CSS-in-JS overhead. Framer Motion handles GPU-accelerated micro-interactions while respecting `prefers-reduced-motion`.
 
 ---
 
-## ✨ Core Features & Capabilities
+## 🤖 How AI Tools Built This (Human-AI Collaboration)
 
-### 💬 Real-Time Streaming & Conversational Intelligence
-- **Token-by-Token SSE Streaming**: Real-time response streaming powered by Vercel AI SDK and OpenAI-compatible KoboLLM.
-- **Collapsible Reasoning Display**: Transparent AI thought-process rendering (`<ThinkingIndicator />` and `<SparklesIcon />` reasoning cards).
-- **Safe Streaming Markdown**: Syntax-highlighted code blocks with copy-to-clipboard, formatted tables, lists, and sanitized markdown rendering.
-- **Smart Auto-Scroll**: Sticky bottom tracking during token arrival with manual user unpin detection and a floating "Jump to Latest" button.
-- **Persistent Feedback**: Thumbs up / Thumbs down message rating persisted to the database.
-- **Regenerate & Instruction Modals**: Per-message action bar allowing quick retries or prompt steering.
+This project was built through a structured, iterative collaboration between the **Human Engineer** and **Advanced AI Coding Agents**.
 
-### 🛡️ Resilience, Security & Virtual State
-- **Virtual (Lazy) Chat Creation**: New chats start in memory (`/chat/new`) without creating database records until the first message is sent, preventing sidebar clutter.
-- **Zero-Flicker Chat Promotion**: Active streams transition seamlessly into real chat URLs using `window.history.replaceState` and `useChatIdRef`.
-- **IDOR Protection**: Strict ownership verification across all chat endpoints (`GET`, `POST`, `DELETE`); unauthorized requests receive masked `404 Not Found` responses.
-- **Rate Limiting**: Distributed Upstash Redis sliding window algorithm protecting endpoints against brute-force spam and billing abuse.
-- **Isolated API Credentials**: Server-side only key storage — no secrets are ever exposed in client JavaScript bundles.
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    HUMAN-AI COLLABORATIVE WORKFLOW                      │
+├────────────────────────────────────┬────────────────────────────────────┤
+│         HUMAN ENGINEER             │         AI CODING AGENT            │
+│       (Director & Critic)          │      (Architect & Executor)        │
+├────────────────────────────────────┼────────────────────────────────────┤
+│ • Requirements definition & scope  │ • Layer-by-layer implementation    │
+│ • UI aesthetic & UX evaluation     │ • Strict architectural compliance  │
+│ • Spotting visual glitches/errors  │ • Writing clean TypeScript & CSS   │
+│ • Deciding enhancements/refactors  │ • Generating Vitest & E2E suites   │
+│ • Evaluating human-centric A11y    │ • Running tests & compiler checks  │
+│ • Orchestrating next iteration     │ • Refactoring & fixing regressions │
+└────────────────────────────────────┴────────────────────────────────────┘
+```
+
+### 1. The Role of the AI Agent
+- **Full Architectural Implementation**: The AI systematically executed all requirements layer-by-layer (from visual tokens and state machines to database schemas and rate limiters) based on the PRDs and technical plans.
+- **Efficient & Type-Safe Code Generation**: Translated complex streaming flows, SSE handlers, multi-step tool definitions, and regex-routed workflows into maintainable, idiomatic TypeScript and Next.js App Router code.
+- **Automated Testing Suite Execution**: Generated comprehensive unit, component, and E2E test suites using Vitest and Playwright with accessibility-first queries and network route mocking, ensuring 100% test pass rates before commit.
+
+### 2. The Role of the Human Engineer
+- **UI & UX Quality Control**: Served as the visual and experiential critic—evaluating animations, color contrast, layout hierarchy, and mobile responsive behavior against real-world human expectations.
+- **Visual Glitch & Error Spotting**: Identified subtle layout shifts, viewport jumps during mobile keyboard activation, contrast failures in dark mode, and state desynchronizations during stream aborts.
+- **Strategic Direction & Decision Making**: Decided which features to add (e.g., Lead Scoring, SmartButton state machines, Lazy Chat Promotion, Production Hygiene) and evaluated whether AI-generated solutions were intuitive, accessible, and acceptable for human end-users.
+- **Prompting & Task Orchestration**: Outlined specific requirements, articulated error symptoms observed in the UI/UX, and defined the next tactical steps for the AI to implement and verify.
+
+---
+
+## 🛡️ Production Hygiene & API Quota Protection
+
+To prevent bot scrapers, resource flooding attacks, and AI billing spikes, the platform incorporates strict production hygiene guards across edge middleware, API endpoints, and client interfaces:
+
+```
+ Incoming Request
+        │
+        ├──► 1. Edge Middleware Guard
+        │       • 512 KB Payload Limit (Rejects Oversized Floods: 413)
+        │       • Production Security Headers (nosniff, DENY, Referrer-Policy)
+        │
+        ├──► 2. Pre-Auth IP Rate Limiter
+        │       • Upstash Redis Sliding Window (30 req / 60s per IP)
+        │       • Resilient In-Memory Fallback Map
+        │
+        ├──► 3. Auth Token Verification
+        │       • Firebase Admin JWT Validation & IDOR Protection
+        │
+        ├──► 4. User-Level Rate Limiter
+        │       • 10 requests / 10s per User (429 Rate Limit Exceeded)
+        │
+        ├──► 5. Input Caps & Context Bounds
+        │       • Max 4,000 Chars per Message (Client & Server Validation)
+        │       • Max 30 History Context Window (Prevents Token Draining)
+        │
+        └──► 6. Serverless Execution Guard
+                • export const maxDuration = 60 (Clean Lifecycle Termination)
+                • AbortSignal.timeout(15000) on External Tools (Tavily)
+```
+
+### Production Hygiene Guard Breakdown
+
+| Layer | Guard Mechanism | Specification | Failure Response |
+|---|---|---|---|
+| **Edge / Middleware** | Payload Size Limit | Maximum `512 KB` request body size | `413 Payload Too Large` |
+| **Pre-Auth IP** | IP Throttling | `30 requests / 60s` per IP address | `429 Rate Limit Exceeded` |
+| **Authenticated User** | User Throttling | `10 requests / 10s` per verified user | `429 Rate Limit Exceeded` (`Retry-After`) |
+| **Input Caps** | Message Length Cap | Maximum `4,000` characters per message | `400 Bad Request` (`MESSAGE_TOO_LONG`) |
+| **Context Bounds** | History Token Flooding Guard | Bound conversation context to `30` most recent messages | Automatic tail slicing |
+| **Serverless Compute** | `maxDuration` Config | `export const maxDuration = 60` for streaming, `30s` for CRUD | Graceful worker termination |
+| **Tool Execution** | Network Timeout | `AbortSignal.timeout(15000)` on Tavily search | Fallback error card without crash |
+| **Client UI** | Dynamic Counter & Lock | `maxLength={4000}`, live warning counter ($\ge 3000$ chars) | Submit button disabled |
 
 ---
 
@@ -158,18 +328,11 @@ User Prompt: "Score Gojek, industry: tech"
 | **50 – 74** | ⚡ Warm Lead | Amber / Yellow |
 | **1 – 49** | ❄️ Cold Lead | Blue / Gray |
 
-### 4-State Tool UI Lifecycle
-
-1. **Input Streaming**: `ToolLoading` indicator with pulsing dots while the LLM generates JSON parameters.
-2. **Input Available**: Parameter confirmation preview.
-3. **Executing**: High-precision spinner indicating active network queries (Tavily Search / Score Calculation).
-4. **Result / Error**: Animated `LeadScoreCard` with progress bar, expandable sources, and analysis bullets (or graceful `ToolError` on network failure).
-
 ---
 
 ## 🛡️ Resilience, Security & Error Matrix (FE-08)
 
-Based on the [FE-08 Resilience Specification](docs/FE-08-RESILIENCE_AND_SECURITY_REQUIREMENTS.md), the application implements surgical error recovery rather than catastrophic page crashes.
+Based on the [FE-08 Resilience Specification](docs/FE-08-RESILIENCE_AND_SECURITY_REQUIREMENTS.md), the application implements surgical error recovery rather than catastrophic page crashes:
 
 | Scenario | Root Cause | System Response | UX Representation |
 |---|---|---|---|
@@ -193,50 +356,7 @@ Enforces strict [Architecture Decision Records](docs/TESTING_REQUIREMENTS.md) to
 
 ### Ironclad Testing Rules:
 - 🔒 **Zero Real API Calls**: All LLM streams and external APIs are mocked using deterministic fixtures.
----
-
-## 🛡️ Production Hygiene & API Quota Protection
-
-To prevent bot scrapers, resource flooding attacks, and AI billing spikes, the platform incorporates strict production hygiene guards across edge middleware, API endpoints, and client interfaces:
-
-```
- Incoming Request
-        │
-        ├──► 1. Edge Middleware Guard
-        │       • 512 KB Payload Limit (Rejects Oversized Floods: 413)
-        │       • Production Security Headers (nosniff, DENY, Referrer-Policy)
-        │
-        ├──► 2. Pre-Auth IP Rate Limiter
-        │       • Upstash Redis Sliding Window (30 req / 60s per IP)
-        │       • Resilient In-Memory Fallback Map
-        │
-        ├──► 3. Auth Token Verification
-        │       • Firebase Admin JWT Validation & IDOR Protection
-        │
-        ├──► 4. User-Level Rate Limiter
-        │       • 10 requests / 10s per User (429 Rate Limit Exceeded)
-        │
-        ├──► 5. Input Caps & Context Bounds
-        │       • Max 4,000 Chars per Message (Client & Server Validation)
-        │       • Max 30 History Context Window (Prevents Token Draining)
-        │
-        └──► 6. Serverless Execution Guard
-                • export const maxDuration = 60 (Clean Lifecycle Termination)
-                • AbortSignal.timeout(15000) on External Tools (Tavily)
-```
-
-### Production Hygiene Guard Breakdown
-
-| Layer | Guard Mechanism | Specification | Failure Response |
-|---|---|---|---|
-| **Edge / Middleware** | Payload Size Limit | Maximum `512 KB` request body size | `413 Payload Too Large` |
-| **Pre-Auth IP** | IP Throttling | `30 requests / 60s` per IP address | `429 Rate Limit Exceeded` |
-| **Authenticated User** | User Throttling | `10 requests / 10s` per verified user | `429 Rate Limit Exceeded` (`Retry-After`) |
-| **Input Caps** | Message Length Cap | Maximum `4,000` characters per message | `400 Bad Request` (`MESSAGE_TOO_LONG`) |
-| **Context Bounds** | History Token Flooding Guard | Bound conversation context to `30` most recent messages | Automatic tail slicing |
-| **Serverless Compute** | `maxDuration` Config | `export const maxDuration = 60` for streaming, `30s` for CRUD | Graceful worker termination |
-| **Tool Execution** | Network Timeout | `AbortSignal.timeout(15000)` on Tavily search | Fallback error card without crash |
-| **Client UI** | Dynamic Counter & Lock | `maxLength={4000}`, live warning counter ($\ge 3000$ chars) | Submit button disabled |
+- ♿ **Strict ARIA Queries**: No brittle CSS classes or `data-testid` attributes; tests query by `getByRole`, `getByText`, and `getByLabelText`.
 
 ---
 
@@ -261,17 +381,6 @@ Documented in detail in [AUDIT.md](AUDIT.md), the application underwent rigorous
 - **WCAG AA Contrast Compliance**: Updated `--text-muted` to `#5C5952` (contrast ratio **5.3:1**) and sidebar muted text to `rgba(255,255,255,0.70)` (contrast ratio **5.8:1+**).
 - **Keyboard Navigation & Landmarks**: Integrated `<a href="#main-content" className="skip-to-content">`, distinct `aria-label` tags on all `<nav>` elements, and visible focus rings.
 - **Assistive Technology for AI Streaming**: Configured `aria-live="polite"`, `aria-atomic="false"`, and `aria-busy={isStreaming}` on assistant message containers.
-
----
-
-## 🎨 SmartButton Motion & State Rationale
-
-The `SmartButton` component implements a robust 5-state lifecycle (`idle` $\to$ `hover` $\to$ `loading` $\to$ `success` / `error` $\to$ `idle`):
-
-- **Mechanical Transitions**: Elements exit via `y: -10px, opacity: 0` and enter via `y: 10px, opacity: 0` using Framer Motion's `mode="popLayout"`.
-- **Micro-Interaction Timings**: 150ms hover/tap for tactile response; 200ms state transitions; 400ms error shake (`[-6px, 6px, -4px, 4px, 0]`).
-- **GPU Compositor Only**: All keyframe animations operate strictly on `transform` and `opacity` to preserve 60fps rendering.
-- **Accessibility Safeguard**: Automatically zeroes out positional movement when `prefers-reduced-motion` is detected.
 
 ---
 
@@ -336,83 +445,6 @@ model Message {
 | **Styling & Motion** | [Tailwind CSS v4](https://tailwindcss.com/) + [Framer Motion](https://www.framer.com/motion/) | Utility styling, GPU animations, CVA, Lucide Icons |
 | **Unit & E2E Testing**| [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) | RTL accessible unit tests and full browser E2E flows |
 | **Deployment** | [Vercel](https://vercel.com/) | Edge networking, automated preview branches, CI/CD |
-
----
-
-## 🚀 Getting Started & Installation
-
-### Prerequisites
-
-- **Node.js**: v18.18+ or v20+
-- **Package Manager**: `npm` or `pnpm`
-- **LLM API Key**: OpenAI or KoboLLM compatible API key
-- **Tavily API Key**: (Optional, for lead scoring) [Free at tavily.com](https://app.tavily.com)
-- **Upstash Redis**: (Optional in development, recommended in production)
-
-### 1. Clone & Install Dependencies
-
-```bash
-git clone https://github.com/AhmadBayu1412/nexus-ai.git
-cd nexus-ai
-npm install
-```
-
-### 2. Environment Configuration
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env.local
-```
-
-Configure your `.env.local` parameters:
-
-```env
-# Database (SQLite for local dev, Neon PostgreSQL for production)
-DATABASE_URL="file:./dev.db"
-
-# NextAuth Configuration
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-super-secret-random-key"
-
-# AI Provider Credentials
-OPENAI_API_KEY="your-llm-api-key"
-OPENAI_BASE_URL="https://api.kobollm.com/v1" # Or custom OpenAI-compatible endpoint
-
-# External Search (Lead Scoring)
-TAVILY_API_KEY="tvly-dev-your-tavily-api-key"
-
-# Upstash Redis Rate Limiting (Optional in local dev)
-UPSTASH_REDIS_REST_URL=""
-UPSTASH_REDIS_REST_TOKEN=""
-
-# OAuth Authentication (Optional for local testing)
-AUTH_GITHUB_ID=""
-AUTH_GITHUB_SECRET=""
-AUTH_GOOGLE_ID=""
-AUTH_GOOGLE_SECRET=""
-```
-
-### 3. Database Initialization
-
-```bash
-# Push schema to local dev database
-npm run db:push
-
-# Generate Prisma Client
-npm run db:generate
-
-# (Optional) Launch Prisma Studio GUI
-npm run db:studio
-```
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -518,15 +550,17 @@ nexus-ai/
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## 🏷 Git Commit Standards
 
-| Shortcut | Action | Scope |
-|---|---|---|
-| `Enter` | Send message / trigger tool call | Chat Input |
-| `Shift + Enter` | Insert newline in message input | Chat Input |
-| `Escape` | Abort active streaming generation | Global Chat View |
-| `Ctrl + K` / `Cmd + K` | Instantly focus chat message input | Global View |
-| `Tab` / `Shift + Tab` | Navigate accessible landmarks & action buttons | Global Accessible Navigation |
+This repository strictly adheres to the **Conventional Commits** specification:
+
+- `feat:` Introduces a new user-facing feature or tool capability (e.g. `feat(lead-scoring): add Tavily search pipeline`).
+- `fix:` Patches a bug or regression (e.g. `fix(chat): prevent unmount during virtual chat promotion`).
+- `docs:` Updates or expands technical documentation (e.g. `docs(readme): add production hygiene and architecture specs`).
+- `test:` Adds or modifies unit, component, or E2E tests (e.g. `test(a11y): add RTL form validation tests`).
+- `refactor:` Code restructuring without altering behavior or fixing bugs (e.g. `refactor(rate-limit): add in-memory fallback`).
+- `perf:` Performance and rendering optimizations (e.g. `perf(css): optimize contrast and composite-only animations`).
+- `chore:` Dependency maintenance or configuration adjustments (e.g. `chore: configure Turbopack and Vitest setup`).
 
 ---
 
