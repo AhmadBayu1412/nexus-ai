@@ -2,7 +2,7 @@
 
 A production-grade, state-of-the-art AI conversational interface and autonomous lead research platform built with **Next.js 16 (App Router)**, **React 19**, **Vercel AI SDK**, **Prisma ORM**, and **Tailwind CSS v4**. Engineered with token-by-token streaming, multi-step tool execution, virtual chat lifecycle management, robust IDOR protection, automated CI/CD testing safety net, production hygiene API rate limiting, and a certified **100/100 Accessibility** audit score.
 
-[**Live Production URL**](https://nexus-ai-chat-five.vercel.app/chat) &nbsp;·&nbsp; [**GitHub Repository**](https://github.com/AhmadBayu1412/nexus-ai) &nbsp;·&nbsp; [**Documentation Index**](#-documentation-index)
+[**Live Production URL**](https://nexus-ai-chatbot-opal.vercel.app) &nbsp;·&nbsp; [**Alternative Mirror**](https://nexus-ai-chat-five.vercel.app/chat) &nbsp;·&nbsp; [**GitHub Repository**](https://github.com/AhmadBayu1412/nexus-ai) &nbsp;·&nbsp; [**Documentation Index**](#-documentation-index)
 
 ---
 
@@ -34,7 +34,8 @@ Traditional AI chatbots often suffer from brittle streaming lifecycles, slow tim
 
 ## 🌐 Production Deployment & Cross-Browser Validation
 
-- **Live Production URL:** [https://nexus-ai-chat-five.vercel.app/chat](https://nexus-ai-chat-five.vercel.app/chat)
+- **Primary Production URL:** [https://nexus-ai-chatbot-opal.vercel.app](https://nexus-ai-chatbot-opal.vercel.app)
+- **Alternative Mirror URL:** [https://nexus-ai-chat-five.vercel.app/chat](https://nexus-ai-chat-five.vercel.app/chat)
 - **Deployment Platform:** Vercel (Edge Network + Serverless Node.js 20 Runtime)
 - **Database:** Neon Serverless PostgreSQL with SSL encryption
 
@@ -202,6 +203,8 @@ The codebase adheres to an 11-layer modular architecture defined in [`docs/layer
 ---
 
 ## 🤖 How AI Tools Built This (Human-AI Collaboration)
+
+> *"The AI handled all technical requirements and architectural layers step-by-step, as well as running the test suites. The AI was immensely helpful in implementing compliant, effective, and efficient code according to the requirements and provisional plans created. My role, as the human engineer, was to review and verify whether the visual presentation (UI) and user experience (UX) aligned with the intended vision and user needs, while actively inspecting for visual errors, regressions, and UI bugs. In addition, deciding whether a component needed enhancement or correction—and evaluating whether what the AI produced was acceptable and intuitive for human users—was also my responsibility. The AI and I collaborated as a synchronized team: I defined the functional requirements, identified any UI/UX issues, and outlined the subsequent strategic steps we needed to take, which the AI then precisely executed."*
 
 This project was built through a structured, iterative collaboration between the **Human Engineer** and **Advanced AI Coding Agents**.
 
